@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ResponseBot - AI-Powered Messaging Assistant</title>
+    <style>
+      :root {
+        --bg-primary-dark: #121212;
+        --bg-secondary-dark: #1e1e1e;
+        --bg-tertiary-dark: #252525;
+        --bg-primary-light: #ffffff;
+        --bg-secondary-light: #f5f5f5;
+        --bg-tertiary-light: #e0e0e0;
+        --accent-primary: #7d5fff;
+        --accent-secondary: #5e72eb;
+        --text-primary-dark: #ffffff;
+        --text-secondary-dark: #b3b3b3;
+        --text-primary-light: #333333;
+        --text-secondary-light: #555555;
+        --text-tertiary: #808080;
+        --danger: #ff5e5e;
+        --success: #5eff8f;
+        --warning: #ffce5e;
+        --info: #5eceff;
+        --neutral: #5e8fff;
+        --witty: #ff5ece;
+        --charming: #5effce;
+        --personalized: #ce5eff;
+        --radius-sm: 6px;
+        --radius-md: 12px;
+        --radius-lg: 18px;
+        --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+        --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+        --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+        --transition-fast: 0.15s ease;
+        --transition-normal: 0.25s ease;
+        --transition-slow: 0.4s ease;
+        --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      }
+
+      /* Default dark theme */
+      body {
+        --bg-primary: var(--bg-primary-dark);
+        --bg-secondary: var(--bg-secondary-dark);
+        --bg-tertiary: var(--bg-tertiary-dark);
+        --text-primary: var(--text-primary-dark);
+        --text-secondary: var(--text-secondary-dark);
+      }
+
+      /* Light theme class */
+      .light-theme {
+        --bg-primary: var(--bg-primary-light);
+        --bg-secondary: var(--bg-secondary-light);
+        --bg-tertiary: var(--bg-tertiary-light);
+        --text-primary: var(--text-primary-light);
+        --text-secondary: var(--text-secondary-light);
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+      }
+      @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+      }
+      @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: var(--font-primary);
+      }
+
+      body {
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow-x: hidden;
+        background-image: radial-gradient(circle at 10% 20%, rgba(125, 95, 255, 0.05) 0%, transparent 30%),
+          radial-gradient(circle at 90% 80%, rgba(94, 114, 235, 0.05) 0%, transparent 30%);
+      }
+
+      header {
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background-color: rgba(18, 18, 18, 0.85);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+      .logo-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-md);
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: var(--shadow-sm);
+      }
+      .logo-text {
+        font-weight: 700;
+        font-size: 1.5rem;
+        background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .header-actions {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+      }
+      /* Ensure toggle buttons are square and center their icons */
+      #settings-toggle,
+      #theme-toggle,
+      #help-toggle {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .btn {
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-md);
+        border: none;
+        font-weight: 600;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all var(--transition-normal);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        box-shadow: var(--shadow-sm);
+        position: relative;
+        overflow: hidden;
+      }
+      #settings-toggle svg,
+      #theme-toggle svg,
+      #help-toggle svg,
+      #upload-button svg {
+        display: block;
+        margin: auto;
+      }
+      .btn::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        background-size: 200% 100%;
+        opacity: 0;
+        transition: opacity var(--transition-normal);
+      }
+      .btn:hover::after {
+        opacity: 1;
+        animation: shimmer 1.5s infinite;
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        color: var(--text-primary);
+      }
+      .btn-secondary {
+        background: var(--bg-tertiary);
+        color: var(--text-secondary);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .btn-icon {
+        padding: 0.6rem;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+      }
+      .icon {
+        width: 20px;
+        height: 20px;
+        stroke: currentColor;
+        stroke-width: 2;
+        fill: none;
+      }
+
+      main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+        width: 100%;
+        gap: 2rem;
+        animation: fadeIn 0.5s ease;
+      }
+      section {
+        border-radius: var(--radius-lg);
+        background: var(--bg-secondary);
+        box-shadow: var(--shadow-md);
+        overflow: hidden;
+        transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+      }
+      section:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+      }
+      .section-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+      }
+      .section-content {
+        padding: 1.5rem;
+      }
+
+      .drag-area {
+        border: 2px dashed rgba(255, 255, 255, 0.1);
+        border-radius: var(--radius-md);
+        padding: 3rem 2rem;
+        text-align: center;
+        transition: all var(--transition-normal);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        min-height: 240px;
+      }
+      .drag-area:hover,
+      .drag-area.active {
+        border-color: var(--accent-primary);
+        background: rgba(125, 95, 255, 0.05);
+      }
+      .drag-icon {
+        width: 64px;
+        height: 64px;
+        stroke: var(--text-secondary);
+        stroke-width: 1.5;
+        fill: none;
+        transition: all var(--transition-normal);
+      }
+      .drag-area:hover .drag-icon,
+      .drag-area.active .drag-icon {
+        stroke: var(--accent-primary);
+        transform: scale(1.1);
+      }
+      .drag-text {
+        font-size: 1.2rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+        transition: all var(--transition-normal);
+      }
+      .drag-area:hover .drag-text,
+      .drag-area.active .drag-text {
+        color: var(--text-primary);
+      }
+      .drag-hint {
+        font-size: 0.9rem;
+        color: var(--text-tertiary);
+      }
+
+      .file-info {
+        margin-top: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-md);
+        width: 100%;
+        max-width: 400px;
+        animation: fadeIn 0.3s ease;
+      }
+      .file-icon {
+        width: 24px;
+        height: 24px;
+        stroke: var(--text-secondary);
+        fill: none;
+      }
+      .file-name {
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .file-remove {
+        color: var(--danger);
+        cursor: pointer;
+        width: 20px;
+        height: 20px;
+        stroke: currentColor;
+        fill: none;
+        transition: all var(--transition-fast);
+      }
+      .file-remove:hover {
+        transform: scale(1.1);
+      }
+      .analyze-button {
+        margin-top: 1.5rem;
+        width: 100%;
+        max-width: 400px;
+        padding: 0.75rem;
+        font-size: 1rem;
+        position: relative;
+        overflow: hidden;
+      }
+      .analyze-button .spinner {
+        display: none;
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: rotate 1s linear infinite;
+        position: absolute;
+        right: 1.2rem;
+      }
+      .analyzing .spinner {
+        display: block;
+      }
+      .analyzing .btn-text {
+        opacity: 0.7;
+      }
+      .results {
+        display: none;
+        flex-direction: column;
+        gap: 2rem;
+        animation: fadeIn 0.5s ease;
+      }
+      .results.active {
+        display: flex;
+      }
+      .result-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+      }
+      .result-card {
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-md);
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .result-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+      }
+      .result-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+      .result-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .result-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+      }
+      .progress-bar {
+        width: 100%;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+        overflow: hidden;
+        position: relative;
+      }
+      .progress-fill {
+        height: 100%;
+        border-radius: 3px;
+        transition: width var(--transition-slow);
+      }
+      .result-value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0.5rem 0;
+      }
+      .result-description {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        line-height: 1.5;
+      }
+      .personality-icon {
+        background: linear-gradient(135deg, var(--info), var(--neutral));
+      }
+      .pattern-icon {
+        background: linear-gradient(135deg, var(--warning), var(--danger));
+      }
+      .sentiment-icon {
+        background: linear-gradient(135deg, var(--success), var(--info));
+      }
+      .emoji-icon {
+        background: linear-gradient(135deg, var(--witty), var(--charming));
+      }
+      .response-modes {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+      }
+      .mode-card {
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-md);
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        cursor: pointer;
+        transition: all var(--transition-normal);
+        border: 2px solid transparent;
+        position: relative;
+        overflow: hidden;
+      }
+      .mode-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+        opacity: 0;
+        transition: opacity var(--transition-normal);
+        pointer-events: none;
+      }
+      .mode-card:hover::after {
+        opacity: 1;
+        animation: shimmer 2s infinite;
+      }
+      .mode-card.active {
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 15px rgba(125, 95, 255, 0.3);
+      }
+      .mode-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .mode-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .mode-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+      }
+      .mode-description {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        line-height: 1.5;
+      }
+      .neutral-icon {
+        background: linear-gradient(135deg, var(--neutral), #4671cc);
+      }
+      .witty-icon {
+        background: linear-gradient(135deg, var(--witty), #cc46ab);
+      }
+      .charming-icon {
+        background: linear-gradient(135deg, var(--charming), #46ccab);
+      }
+      .personalized-icon {
+        background: linear-gradient(135deg, var(--personalized), #ab46cc);
+      }
+      .slider-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+      }
+      .slider-label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .slider-title {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+      }
+      .slider-value {
+        font-size: 0.8rem;
+        padding: 0.2rem 0.5rem;
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-sm);
+        color: var(--text-secondary);
+        min-width: 40px;
+        text-align: center;
+      }
+      .slider {
+        -webkit-appearance: none;
+        width: 100%;
+        height: 6px;
+        border-radius: 3px;
+        background: rgba(255, 255, 255, 0.1);
+        outline: none;
+        transition: background var(--transition-normal);
+      }
+      .slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--accent-primary);
+        cursor: pointer;
+        transition: all var(--transition-normal);
+        border: 2px solid var(--bg-tertiary);
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+      }
+      .slider::-moz-range-thumb {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--accent-primary);
+        cursor: pointer;
+        transition: all var(--transition-normal);
+        border: 2px solid var(--bg-tertiary);
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+      }
+      .slider:hover::-webkit-slider-thumb {
+        transform: scale(1.1);
+        box-shadow: 0 0 10px rgba(125, 95, 255, 0.4);
+      }
+      .slider:hover::-moz-range-thumb {
+        transform: scale(1.1);
+        box-shadow: 0 0 10px rgba(125, 95, 255, 0.4);
+      }
+      .color-options {
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+      }
+      .color-option {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all var(--transition-normal);
+        position: relative;
+        border: 2px solid var(--bg-tertiary);
+      }
+      .color-option:hover {
+        transform: scale(1.1);
+      }
+      .color-option.active {
+        transform: scale(1.1);
+      }
+      .color-option.active::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--bg-tertiary);
+      }
+      .color-purple {
+        background: linear-gradient(135deg, #7d5fff, #5e72eb);
+      }
+      .color-blue {
+        background: linear-gradient(135deg, #5e8fff, #5e72eb);
+      }
+      .color-green {
+        background: linear-gradient(135deg, #5effce, #5eff8f);
+      }
+      .color-pink {
+        background: linear-gradient(135deg, #ff5ece, #ff5e8f);
+      }
+      .color-orange {
+        background: linear-gradient(135deg, #ffce5e, #ff8f5e);
+      }
+      .api-key-input {
+        background: var(--bg-tertiary);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: var(--radius-md);
+        padding: 0.75rem 1rem;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        width: 100%;
+        transition: all var(--transition-normal);
+      }
+      .api-key-input:focus {
+        outline: none;
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 0 2px rgba(125, 95, 255, 0.2);
+      }
+      /* Conversation History */
+      #conversation-history {
+        margin-bottom: 1rem;
+        padding: 1rem;
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-md);
+        max-height: 300px;
+        overflow-y: auto;
+      }
+      .message {
+        margin-bottom: 0.5rem;
+        padding: 0.5rem;
+        border-radius: var(--radius-sm);
+      }
+      .user-message {
+        background: rgba(0, 0, 0, 0.2);
+        text-align: right;
+      }
+      .bot-message {
+        background: rgba(255, 255, 255, 0.1);
+        text-align: left;
+      }
+      /* Help Modal (Onboarding) */
+      #help-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.6);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+      }
+      #help-modal.active {
+        display: flex;
+      }
+      #help-modal .modal-content {
+        background: var(--bg-secondary);
+        padding: 2rem;
+        border-radius: var(--radius-md);
+        max-width: 500px;
+        text-align: center;
+      }
+      #help-modal .modal-content h2 {
+        margin-bottom: 1rem;
+      }
+      #help-modal .modal-content p {
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+      }
+      #help-modal .modal-content button {
+        margin-top: 1rem;
+      }
+      /* Toast Notifications */
+      #toast-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 200;
+      }
+      .toast {
+        background: rgba(0, 0, 0, 0.8);
+        color: #fff;
+        padding: 0.75rem 1rem;
+        margin-top: 10px;
+        border-radius: var(--radius-md);
+        opacity: 0;
+        animation: fadeIn 0.5s forwards;
+      }
+      /* Settings: Hide by default, toggle via class */
+      #settings-section {
+        display: none;
+      }
+      #settings-section.active-settings {
+        display: block;
+      }
+      @media (max-width: 768px) {
+        .section-header { padding: 1.25rem; }
+        .section-content { padding: 1.25rem; }
+        main { padding: 1.25rem; }
+        .drag-area { padding: 2rem 1rem; }
+        .result-grid, .response-modes { grid-template-columns: 1fr; }
+      }
+      @media (max-width: 576px) {
+        .logo-text { display: none; }
+        .header-actions { gap: 0.5rem; }
+        .btn { padding: 0.5rem 1rem; font-size: 0.8rem; }
+      }
+      @media (prefers-reduced-motion) {
+        * { animation: none !important; transition: none !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="logo">
+        <div class="logo-icon">
+          <svg class="icon" viewBox="0 0 24 24">
+            <path d="M12 3c1.5 0 2.25 0 3 1.5 0.75 1.5 0.75 1.5 1.5 3 0.75-1.5 0.75-1.5 1.5-3 0.75-1.5 1.5-1.5 3-1.5-1.5 0-2.25 0-3-1.5-0.75-1.5-0.75-1.5-1.5-3-0.75 1.5-0.75 1.5-1.5 3-0.75 1.5-1.5 1.5-3 1.5z"></path>
+            <path d="M12 9c1 0 1.5 0 2 1 0.5 1 0.5 1 1 2 0.5-1 0.5-1 1-2 0.5-1 1-1 2-1-1.5 0-1.5 0-2 1z"></path>
+            <path d="M5.5 16c0.828 0 1.5 0.672 1.5 1.5s-0.672 1.5-1.5 1.5-1.5-0.672-1.5-1.5 0.672-1.5 1.5-1.5z"></path>
+          </svg>
+        </div>
+        <div class="logo-text">ResponseBot</div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-secondary tooltip" data-tooltip="Settings" id="settings-toggle">
+          <svg class="icon" viewBox="0 0 24 24">
+            <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82V9a1.65 1.65 0 0 0 1.51-1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+        <button class="btn btn-secondary tooltip" data-tooltip="Toggle Theme" id="theme-toggle">
+          <svg class="icon" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"></circle>
+          </svg>
+        </button>
+        <button class="btn btn-secondary tooltip" data-tooltip="Help" id="help-toggle">
+          <svg class="icon" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 8v4"></path>
+            <circle cx="12" cy="16" r="1"></circle>
+          </svg>
+        </button>
+        <button class="btn btn-primary" id="upload-button">
+          <svg class="icon" viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span>Upload</span>
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <section id="upload-section">
+        <div class="section-header">
+          <h2 class="section-title">Upload Messages</h2>
+          <span class="tooltip" data-tooltip="Upload your iMessage export">
+            <svg class="icon" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12" y2="8"></line>
+            </svg>
+          </span>
+        </div>
+        <div class="section-content">
+          <div class="drag-area" id="drop-zone">
+            <svg class="drag-icon" viewBox="0 0 24 24">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            <h3 class="drag-text">Drag & Drop your files here</h3>
+            <p class="drag-hint">or click to browse</p>
+            <input type="file" id="file-input" style="display: none;" />
+          </div>
+          <div id="file-info-container" style="display: none;">
+            <div class="file-info">
+              <svg class="file-icon" viewBox="0 0 24 24">
+                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                <polyline points="13 2 13 9 20 9"></polyline>
+              </svg>
+              <span class="file-name" id="file-name">messages.csv</span>
+              <svg class="file-remove" id="remove-file" viewBox="0 0 24 24">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </div>
+            <button class="btn btn-primary analyze-button" id="analyze-button">
+              <span class="btn-text">Analyze Messages</span>
+              <div class="spinner"></div>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <div class="results" id="results">
+        <section id="analysis-section">
+          <div class="section-header">
+            <h2 class="section-title">Message Analysis</h2>
+            <span class="tooltip" data-tooltip="AI-powered message analysis">
+              <svg class="icon" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12" y2="8"></line>
+              </svg>
+            </span>
+          </div>
+          <div class="section-content">
+            <div class="result-grid">
+              <div class="result-card">
+                <div class="result-header">
+                  <div class="result-icon personality-icon">
+                    <svg class="icon" viewBox="0 0 24 24">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="9" cy="7" r="4"></circle>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                  </div>
+                  <h3 class="result-title">Personality</h3>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 78%; background: linear-gradient(to right, var(--info), var(--neutral));"></div>
+                </div>
+                <div class="result-value">Friendly</div>
+                <p class="result-description">
+                  Your messaging style appears warm and approachable. You use positive language, ask questions, and engage meaningfully in conversations.
+                </p>
+              </div>
+
+              <div class="result-card">
+                <div class="result-header">
+                  <div class="result-icon pattern-icon">
+                    <svg class="icon" viewBox="0 0 24 24">
+                      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                    </svg>
+                  </div>
+                  <h3 class="result-title">Response Pattern</h3>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 65%; background: linear-gradient(to right, var(--warning), var(--danger));"></div>
+                </div>
+                <div class="result-value">Quick</div>
+                <p class="result-description">
+                  You typically respond within 15 minutes during active conversations. Your messages tend to be concise but thoughtful.
+                </p>
+              </div>
+
+              <div class="result-card">
+                <div class="result-header">
+                  <div class="result-icon sentiment-icon">
+                    <svg class="icon" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                      <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                      <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                    </svg>
+                  </div>
+                  <h3 class="result-title">Sentiment</h3>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 82%; background: linear-gradient(to right, var(--success), var(--info));"></div>
+                </div>
+                <div class="result-value">Positive</div>
+                <p class="result-description">
+                  Your messages convey a consistently positive tone. You frequently use encouraging words and supportive language.
+                </p>
+              </div>
+
+              <div class="result-card">
+                <div class="result-header">
+                  <div class="result-icon emoji-icon">
+                    <svg class="icon" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                      <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                      <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                    </svg>
+                  </div>
+                  <h3 class="result-title">Emoji Usage</h3>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 45%; background: linear-gradient(to right, var(--witty), var(--charming));"></div>
+                </div>
+                <div class="result-value">Moderate</div>
+                <p class="result-description">
+                  You use emojis selectively to emphasize points. Most commonly used: 😊, 👍, and 😂.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="modes-section">
+          <div class="section-header">
+            <h2 class="section-title">Response Modes</h2>
+            <span class="tooltip" data-tooltip="Select your preferred response style">
+              <svg class="icon" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12" y2="8"></line>
+              </svg>
+            </span>
+          </div>
+          <div class="section-content">
+            <!-- Conversation History -->
+            <div id="conversation-history"></div>
+            <div class="response-modes">
+              <div class="mode-card active" data-mode="neutral">
+                <div class="mode-header">
+                  <h3 class="mode-title">Neutral</h3>
+                  <div class="mode-icon neutral-icon">
+                    <svg class="icon" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <line x1="8" y1="12" x2="16" y2="12"></line>
+                    </svg>
+                  </div>
+                </div>
+                <p class="mode-description">
+                  Clear, straightforward responses without added flair or personality.
+                </p>
+              </div>
+
+              <div class="mode-card" data-mode="witty">
+                <div class="mode-header">
+                  <h3 class="mode-title">Witty</h3>
+                  <div class="mode-icon witty-icon">
+                    <svg class="icon" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                      <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                      <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                    </svg>
+                  </div>
+                </div>
+                <p class="mode-description">
+                  Clever, humorous responses with a touch of playful personality.
+                </p>
+              </div>
+
+              <div class="mode-card" data-mode="charming">
+                <div class="mode-header">
+                  <h3 class="mode-title">Charming</h3>
+                  <div class="mode-icon charming-icon">
+                    <svg class="icon" viewBox="0 0 24 24">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                  </div>
+                </div>
+                <p class="mode-description">
+                  Warm, engaging responses with a friendly and approachable tone.
+                </p>
+              </div>
+
+              <div class="mode-card" data-mode="personalized">
+                <div class="mode-header">
+                  <h3 class="mode-title">Personalized</h3>
+                  <div class="mode-icon personalized-icon">
+                    <svg class="icon" viewBox="0 0 24 24">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="9" cy="7" r="4"></circle>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                  </div>
+                </div>
+                <p class="mode-description">
+                  Responses that match your exact texting style and personality.
+                </p>
+              </div>
+            </div>
+
+            <div class="query-input">
+              <textarea class="message-input" id="message-input" placeholder="Type a message to get a response..."></textarea>
+              <button class="btn btn-primary send-button" id="send-button">
+                <svg class="icon" viewBox="0 0 24 24">
+                  <line x1="22" y1="2" x2="11" y2="13"></line>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section id="settings-section">
+          <div class="section-header">
+            <h2 class="section-title">Settings</h2>
+            <span class="tooltip" data-tooltip="Customize your experience">
+              <svg class="icon" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12" y2="8"></line>
+              </svg>
+            </span>
+          </div>
+          <div class="section-content">
+            <div class="slider-container">
+              <div class="slider-label">
+                <span class="slider-title">Response Length</span>
+                <span class="slider-value" id="length-value">Medium</span>
+              </div>
+              <input type="range" min="1" max="5" value="3" class="slider" id="length-slider" />
+            </div>
+
+            <div class="slider-container">
+              <div class="slider-label">
+                <span class="slider-title">Creativity Level</span>
+                <span class="slider-value" id="creativity-value">Balanced</span>
+              </div>
+              <input type="range" min="1" max="5" value="3" class="slider" id="creativity-slider" />
+            </div>
+
+            <div class="slider-container">
+              <div class="slider-label">
+                <span class="slider-title">Theme Contrast</span>
+                <span class="slider-value" id="contrast-value">Medium</span>
+              </div>
+              <input type="range" min="1" max="5" value="3" class="slider" id="contrast-slider" />
+            </div>
+
+            <h3 style="margin: 1.5rem 0 0.75rem 0; font-size: 1rem; color: var(--text-secondary);">
+              Accent Color
+            </h3>
+            <div class="color-options">
+              <div class="color-option color-purple active" data-color="purple"></div>
+              <div class="color-option color-blue" data-color="blue"></div>
+              <div class="color-option color-green" data-color="green"></div>
+              <div class="color-option color-pink" data-color="pink"></div>
+              <div class="color-option color-orange" data-color="orange"></div>
+            </div>
+
+            <h3 style="margin: 1.5rem 0 0.75rem 0; font-size: 1rem; color: var(--text-secondary);">
+              OpenAI API Key
+            </h3>
+            <input type="password" class="api-key-input" id="api-key-input" placeholder="Enter your OpenAI API key" />
+            <button class="btn btn-primary" id="save-api-key" style="margin-top: 1rem;">Save</button>
+
+            <h3 style="margin: 1.5rem 0 0.75rem 0; font-size: 1rem; color: var(--text-secondary);">
+              Background Image URL
+            </h3>
+            <input type="text" class="api-key-input" id="bg-url-input" placeholder="Enter background image URL" />
+            <button class="btn btn-primary" id="set-bg" style="margin-top: 1rem;">Set Background</button>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Help Modal -->
+    <div id="help-modal">
+      <div class="modal-content">
+        <h2>Welcome to ResponseBot!</h2>
+        <p>
+          • Upload your message file using the Upload section.<br />
+          • Your conversation history appears in the chat area.<br />
+          • Type your message and hit Send to get a response powered by ChatGPT‑4.<br />
+          • Adjust response length and creativity in Settings.<br />
+          • Save your OpenAI API key and customize your background.
+        </p>
+        <button class="btn btn-primary" id="close-help">Close</button>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // DOM Elements
+        const dropZone = document.getElementById("drop-zone");
+        const fileInput = document.getElementById("file-input");
+        const fileInfoContainer = document.getElementById("file-info-container");
+        const fileName = document.getElementById("file-name");
+        const removeFile = document.getElementById("remove-file");
+        const analyzeButton = document.getElementById("analyze-button");
+        const results = document.getElementById("results");
+        const settingsToggle = document.getElementById("settings-toggle");
+        const settingsSection = document.getElementById("settings-section");
+        const modeCards = document.querySelectorAll(".mode-card");
+        const messageInput = document.getElementById("message-input");
+        const sendButton = document.getElementById("send-button");
+        const uploadButton = document.getElementById("upload-button");
+        const saveApiKeyButton = document.getElementById("save-api-key");
+        const themeToggle = document.getElementById("theme-toggle");
+        const helpToggle = document.getElementById("help-toggle");
+        const helpModal = document.getElementById("help-modal");
+        const closeHelp = document.getElementById("close-help");
+        const conversationHistoryDiv = document.getElementById("conversation-history");
+        const setBgButton = document.getElementById("set-bg");
+        const bgUrlInput = document.getElementById("bg-url-input");
+
+        // Sliders
+        const lengthSlider = document.getElementById("length-slider");
+        const lengthValue = document.getElementById("length-value");
+        const creativitySlider = document.getElementById("creativity-slider");
+        const creativityValue = document.getElementById("creativity-value");
+        const contrastSlider = document.getElementById("contrast-slider");
+        const contrastValue = document.getElementById("contrast-value");
+        const colorOptions = document.querySelectorAll(".color-option");
+
+        // Conversation history
+        let conversationHistory = [];
+
+        // Toast notification function
+        function showToast(message, type = "info") {
+          const container = document.getElementById("toast-container");
+          const toast = document.createElement("div");
+          toast.className = "toast";
+          if (type === "success") {
+            toast.style.background = "#5eff8f";
+          } else if (type === "error") {
+            toast.style.background = "#ff5e5e";
+          } else {
+            toast.style.background = "rgba(0,0,0,0.8)";
+          }
+          toast.textContent = message;
+          container.appendChild(toast);
+          setTimeout(() => {
+            toast.style.opacity = 0;
+            toast.style.transition = "opacity 0.5s";
+          }, 3000);
+          setTimeout(() => {
+            container.removeChild(toast);
+          }, 3500);
+        }
+
+        // Auto-show Help modal on first visit
+        if (!localStorage.getItem("visited")) {
+          helpModal.classList.add("active");
+        }
+
+        // Toggle Theme (Dark/Light)
+        themeToggle.addEventListener("click", () => {
+          document.body.classList.toggle("light-theme");
+          showToast("Theme toggled", "success");
+        });
+
+        // Toggle Help Modal
+        helpToggle.addEventListener("click", () => {
+          helpModal.classList.add("active");
+        });
+        closeHelp.addEventListener("click", () => {
+          helpModal.classList.remove("active");
+          localStorage.setItem("visited", "true");
+        });
+
+        // Drag and drop file upload
+        dropZone.addEventListener("click", () => {
+          fileInput.click();
+        });
+        fileInput.addEventListener("change", handleFileSelect);
+        dropZone.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          dropZone.classList.add("active");
+        });
+        dropZone.addEventListener("dragleave", () => {
+          dropZone.classList.remove("active");
+        });
+        dropZone.addEventListener("drop", (e) => {
+          e.preventDefault();
+          dropZone.classList.remove("active");
+          if (e.dataTransfer.files.length) {
+            handleFiles(e.dataTransfer.files);
+          }
+        });
+
+        function handleFileSelect(e) {
+          if (e.target.files.length) {
+            handleFiles(e.target.files);
+          }
+        }
+        function handleFiles(files) {
+          const file = files[0];
+          fileName.textContent = file.name;
+          fileInfoContainer.style.display = "flex";
+          fileInfoContainer.style.flexDirection = "column";
+          fileInfoContainer.style.alignItems = "center";
+          dropZone.style.display = "none";
+          showToast("File uploaded", "success");
+        }
+        removeFile.addEventListener("click", () => {
+          fileInput.value = "";
+          fileInfoContainer.style.display = "none";
+          dropZone.style.display = "flex";
+        });
+        // Header Upload Button
+        uploadButton.addEventListener("click", () => {
+          fileInput.click();
+        });
+        // Analyze button simulation (for file analysis)
+        analyzeButton.addEventListener("click", () => {
+          analyzeButton.classList.add("analyzing");
+          setTimeout(() => {
+            analyzeButton.classList.remove("analyzing");
+            results.classList.add("active");
+            results.scrollIntoView({ behavior: "smooth" });
+            showToast("Analysis complete", "success");
+          }, 2000);
+        });
+
+        // Toggle settings section
+        settingsToggle.addEventListener("click", () => {
+          settingsSection.classList.toggle("active-settings");
+        });
+
+        // Response modes selection
+        modeCards.forEach((card) => {
+          card.addEventListener("click", () => {
+            modeCards.forEach((c) => c.classList.remove("active"));
+            card.classList.add("active");
+          });
+        });
+
+        // Update conversation history UI
+        function updateConversationHistory() {
+          conversationHistoryDiv.innerHTML = "";
+          conversationHistory.forEach((msg) => {
+            const msgDiv = document.createElement("div");
+            msgDiv.className = "message " + (msg.role === "user" ? "user-message" : "bot-message");
+            msgDiv.textContent = msg.content;
+            conversationHistoryDiv.appendChild(msgDiv);
+          });
+          conversationHistoryDiv.scrollTop = conversationHistoryDiv.scrollHeight;
+        }
+
+        // Send message using OpenAI API
+        async function sendMessage() {
+          const userMessage = messageInput.value.trim();
+          if (!userMessage) return;
+          conversationHistory.push({ role: "user", content: userMessage });
+          updateConversationHistory();
+          messageInput.value = "";
+          // Insert system prompt if starting new conversation
+          const activeMode = document.querySelector(".mode-card.active").dataset.mode;
+          if (conversationHistory.length === 1) {
+            conversationHistory.unshift({
+              role: "system",
+              content: "You are a helpful assistant with a " + activeMode + " tone.",
+            });
+          }
+          const apiKey = document.getElementById("api-key-input").value.trim();
+          if (!apiKey) {
+            showToast("Please enter your OpenAI API key in Settings.", "error");
+            return;
+          }
+          // Map creativity slider to temperature
+          const creativity = parseInt(creativitySlider.value);
+          let temperature;
+          switch (creativity) {
+            case 1: temperature = 0.2; break;
+            case 2: temperature = 0.4; break;
+            case 3: temperature = 0.7; break;
+            case 4: temperature = 0.9; break;
+            case 5: temperature = 1.0; break;
+            default: temperature = 0.7;
+          }
+          showToast("Sending message...", "info");
+          try {
+            const response = await fetch("https://api.openai.com/v1/chat/completions", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: "Bearer " + apiKey,
+              },
+              body: JSON.stringify({
+                model: "gpt-4",
+                messages: conversationHistory,
+                temperature: temperature,
+              }),
+            });
+            const data = await response.json();
+            if (response.ok) {
+              const botMessage = data.choices[0].message.content.trim();
+              conversationHistory.push({ role: "assistant", content: botMessage });
+              updateConversationHistory();
+              showToast("Response received", "success");
+            } else {
+              const errorMsg = data.error?.message || "Error communicating with API.";
+              conversationHistory.push({ role: "assistant", content: "Error: " + errorMsg });
+              updateConversationHistory();
+              showToast("Error: " + errorMsg, "error");
+            }
+          } catch (error) {
+            conversationHistory.push({ role: "assistant", content: "Error: " + error.message });
+            updateConversationHistory();
+            showToast("Error: " + error.message, "error");
+          }
+        }
+
+        sendButton.addEventListener("click", sendMessage);
+        messageInput.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+          }
+        });
+
+        // Sliders functionality
+        lengthSlider.addEventListener("input", () => {
+          const value = lengthSlider.value;
+          let text;
+          switch (value) {
+            case "1": text = "Very Short"; break;
+            case "2": text = "Short"; break;
+            case "3": text = "Medium"; break;
+            case "4": text = "Long"; break;
+            case "5": text = "Very Long"; break;
+          }
+          lengthValue.textContent = text;
+        });
+        creativitySlider.addEventListener("input", () => {
+          const value = creativitySlider.value;
+          let text;
+          switch (value) {
+            case "1": text = "Very Low"; break;
+            case "2": text = "Low"; break;
+            case "3": text = "Balanced"; break;
+            case "4": text = "High"; break;
+            case "5": text = "Very High"; break;
+          }
+          creativityValue.textContent = text;
+        });
+        contrastSlider.addEventListener("input", () => {
+          const value = contrastSlider.value;
+          let text;
+          switch (value) {
+            case "1": text = "Very Low"; break;
+            case "2": text = "Low"; break;
+            case "3": text = "Medium"; break;
+            case "4": text = "High"; break;
+            case "5": text = "Very High"; break;
+          }
+          contrastValue.textContent = text;
+          const contrast = (value - 1) * 0.15;
+          document.documentElement.style.setProperty("--bg-primary", `rgba(18, 18, 18, ${1 - contrast})`);
+          document.documentElement.style.setProperty("--bg-secondary", `rgba(30, 30, 30, ${1 - contrast})`);
+          document.documentElement.style.setProperty("--bg-tertiary", `rgba(37, 37, 37, ${1 - contrast})`);
+        });
+
+        colorOptions.forEach((option) => {
+          option.addEventListener("click", () => {
+            colorOptions.forEach((o) => o.classList.remove("active"));
+            option.classList.add("active");
+            const color = option.dataset.color;
+            updateAccentColor(color);
+          });
+        });
+        function updateAccentColor(color) {
+          let primary, secondary;
+          switch (color) {
+            case "purple":
+              primary = "#7d5fff";
+              secondary = "#5e72eb";
+              break;
+            case "blue":
+              primary = "#5e8fff";
+              secondary = "#5e72eb";
+              break;
+            case "green":
+              primary = "#5effce";
+              secondary = "#5eff8f";
+              break;
+            case "pink":
+              primary = "#ff5ece";
+              secondary = "#ff5e8f";
+              break;
+            case "orange":
+              primary = "#ffce5e";
+              secondary = "#ff8f5e";
+              break;
+          }
+          document.documentElement.style.setProperty("--accent-primary", primary);
+          document.documentElement.style.setProperty("--accent-secondary", secondary);
+        }
+
+        messageInput.addEventListener("input", function () {
+          this.style.height = "auto";
+          this.style.height = this.scrollHeight + "px";
+        });
+
+        saveApiKeyButton.addEventListener("click", () => {
+          const apiKey = document.getElementById("api-key-input").value.trim();
+          if (apiKey) {
+            localStorage.setItem("openai_api_key", apiKey);
+            showToast("API key saved successfully", "success");
+          } else {
+            showToast("Please enter an API key", "error");
+          }
+        });
+
+        // Background Image customization
+        setBgButton.addEventListener("click", () => {
+          const url = bgUrlInput.value.trim();
+          if (url) {
+            document.body.style.backgroundImage = `url('${url}')`;
+            showToast("Background updated", "success");
+          } else {
+            document.body.style.backgroundImage = "";
+            showToast("Background reset to default", "success");
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
