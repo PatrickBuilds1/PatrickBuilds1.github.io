@@ -385,6 +385,63 @@
         color: var(--text-tertiary);
       }
 
+      /* Sample Analysis Button */
+      .sample-analysis-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 1.5rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .sample-analysis-button {
+        background: var(--accent-primary);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.25rem;
+        border-radius: var(--radius-md);
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all var(--transition-normal);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .sample-analysis-button:hover {
+        background: var(--accent-secondary);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+      }
+
+      .sample-analysis-button svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      .or-divider {
+        display: flex;
+        align-items: center;
+        margin: 1.5rem 0;
+        color: var(--text-tertiary);
+        font-size: 0.9rem;
+      }
+
+      .or-divider::before,
+      .or-divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.1);
+        margin: 0 1rem;
+      }
+
+      .light-mode .or-divider::before,
+      .light-mode .or-divider::after {
+        background: rgba(0, 0, 0, 0.1);
+      }
+
       .file-info {
         margin-top: 1rem;
         display: flex;
@@ -626,6 +683,54 @@
       }
       .witty-icon {
         background: linear-gradient(135deg, var(--witty), #cc46ab);
+      }
+
+      /* Suggestion buttons */
+      .suggestion-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+      }
+
+      .suggestion-button {
+        background: var(--bg-tertiary);
+        color: var(--text-secondary);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: var(--radius-md);
+        padding: 0.8rem 1.2rem;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all var(--transition-normal);
+        flex: 1;
+        min-width: 200px;
+        text-align: left;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .suggestion-button:hover {
+        background: rgba(125, 95, 255, 0.1);
+        border-color: var(--accent-primary);
+      }
+
+      .suggestion-button svg {
+        width: 18px;
+        height: 18px;
+        color: var(--accent-primary);
+        flex-shrink: 0;
+      }
+
+      .light-mode .suggestion-button {
+        background: #f5f5f5;
+        border-color: #e0e0e0;
+      }
+
+      .light-mode .suggestion-button:hover {
+        background: rgba(0, 122, 255, 0.05);
+        border-color: #007aff;
       }
 
       /* Chat controls container - for input and buttons */
@@ -999,6 +1104,14 @@
           padding: 1.5rem;
           width: 95%;
         }
+        
+        .suggestion-buttons {
+          flex-direction: column;
+        }
+        
+        .suggestion-button {
+          width: 100%;
+        }
       }
 
       @keyframes fadeIn {
@@ -1077,6 +1190,19 @@
             <h3 class="drag-text">Drag & Drop your files here</h3>
             <p class="drag-hint">or click to browse</p>
             <input type="file" id="file-input" style="display: none;" />
+          </div>
+          
+          <!-- Sample Analysis Button -->
+          <div class="or-divider">OR</div>
+          <div class="sample-analysis-container">
+            <button id="sample-analysis-button" class="sample-analysis-button">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+              </svg>
+              Try Sample Analysis
+            </button>
           </div>
 
           <div id="file-info-container" style="display: none;">
@@ -1333,6 +1459,34 @@
                 </p>
               </div>
             </div>
+            
+            <!-- Suggestion Buttons -->
+            <div class="suggestion-buttons">
+              <button class="suggestion-button" id="suggestion-email">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+                How would I respond to this email?
+              </button>
+              <button class="suggestion-button" id="suggestion-dinner">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                  <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+                  <line x1="6" y1="1" x2="6" y2="4"></line>
+                  <line x1="10" y1="1" x2="10" y2="4"></line>
+                  <line x1="14" y1="1" x2="14" y2="4"></line>
+                </svg>
+                Write a message about dinner plans
+              </button>
+              <button class="suggestion-button" id="suggestion-professional">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                </svg>
+                Draft a professional message for me
+              </button>
+            </div>
 
             <div class="chat-controls">
               <div class="query-input">
@@ -1380,7 +1534,7 @@
     </div>
 
     <script>
-      const API_KEY = "xxx";
+      const API_KEY = "";
       const VERSION = "1.0.12";
 
       document.addEventListener("DOMContentLoaded", function () {
@@ -1390,6 +1544,7 @@
         const fileName = document.getElementById("file-name");
         const removeFile = document.getElementById("remove-file");
         const analyzeButton = document.getElementById("analyze-button");
+        const sampleAnalysisButton = document.getElementById("sample-analysis-button");
         const results = document.getElementById("results");
         const themeToggle = document.getElementById("theme-toggle");
         const helpToggle = document.getElementById("help-toggle");
@@ -1404,6 +1559,11 @@
         const settingsPanel = document.getElementById("settings-panel");
         const toggleSettings = document.getElementById("toggle-settings");
         const clearChatButton = document.getElementById("clear-chat");
+
+        // Suggestion buttons
+        const suggestionEmail = document.getElementById("suggestion-email");
+        const suggestionDinner = document.getElementById("suggestion-dinner");
+        const suggestionProfessional = document.getElementById("suggestion-professional");
 
         // Sliders for length & creativity
         const lengthSlider = document.getElementById("length-slider");
@@ -1496,6 +1656,16 @@
           fileInput.click();
         });
 
+        // Sample Analysis button
+        sampleAnalysisButton.addEventListener("click", () => {
+          showToast("Running sample analysis...", "info");
+          setTimeout(() => {
+            results.classList.add("active");
+            results.scrollIntoView({ behavior: "smooth" });
+            showToast("Sample analysis complete", "success");
+          }, 1500);
+        });
+
         // Analyze
         analyzeButton.addEventListener("click", () => {
           analyzeButton.classList.add("analyzing");
@@ -1538,6 +1708,22 @@
           conversationHistoryDiv.innerHTML = "";
           conversationHistoryDiv.classList.remove("active");
           showToast("Chat cleared", "info");
+        });
+
+        // Handle suggestion clicks
+        suggestionEmail.addEventListener("click", () => {
+          messageInput.value = "How would I respond to this email?";
+          sendMessage();
+        });
+
+        suggestionDinner.addEventListener("click", () => {
+          messageInput.value = "Write a message about dinner plans";
+          sendMessage();
+        });
+
+        suggestionProfessional.addEventListener("click", () => {
+          messageInput.value = "Draft a professional message for me";
+          sendMessage();
         });
 
         // Send message
