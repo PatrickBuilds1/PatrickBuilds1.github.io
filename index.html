@@ -108,10 +108,16 @@
         z-index: 10;
         background-color: rgba(0, 0, 0, 0.75);
         border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        transition: transform 0.3s ease;
       }
       .light-mode header {
         background-color: rgba(245, 245, 245, 0.9);
         border-bottom: 1px solid #cccccc;
+      }
+      
+      /* Header hide on scroll down, show on scroll up */
+      header.header-hidden {
+        transform: translateY(-100%);
       }
 
       .logo {
@@ -288,6 +294,25 @@
         font-weight: 700;
         letter-spacing: -0.5px;
         position: relative;
+      }
+      
+      /* Special styling for "Me" in "Message" */
+      .section-title .highlight {
+        position: relative;
+        color: var(--accent-primary);
+        font-weight: 800;
+      }
+      
+      .section-title .highlight::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 6px;
+        background: linear-gradient(90deg, var(--accent-primary), transparent);
+        border-radius: 3px;
+        opacity: 0.3;
       }
       
       .section-title::after {
@@ -612,7 +637,9 @@
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 1rem;
+        margin-bottom: 2rem; /* Added spacing between mode cards and suggestion buttons */
       }
+      
       .mode-card {
         background: var(--bg-tertiary);
         border-radius: var(--radius-md);
@@ -690,7 +717,7 @@
         display: flex;
         flex-wrap: wrap;
         gap: 0.75rem;
-        margin-bottom: 1rem;
+        margin-bottom: 1.5rem; /* Increased spacing between suggestion buttons and chat controls */
       }
 
       .suggestion-button {
@@ -1073,6 +1100,12 @@
           justify-content: space-between;
         }
         
+        .tagline {
+          margin-left: 0;
+          text-align: center;
+          margin-top: 0.5rem;
+        }
+        
         .query-input {
           flex-direction: column;
           gap: 0.75rem;
@@ -1084,12 +1117,6 @@
         
         .send-button {
           width: 100%;
-        }
-        
-        .tagline {
-          margin-left: 0;
-          text-align: center;
-          margin-top: 0.5rem;
         }
         
         .chat-controls {
@@ -1129,7 +1156,7 @@
     </style>
   </head>
   <body>
-    <header>
+    <header id="site-header">
       <div class="logo">
         <div class="logo-main">
           <div class="logo-icon">
@@ -1161,7 +1188,7 @@
     <main>
       <section id="upload-section">
         <div class="section-header">
-          <h2 class="section-title">Message Analysis</h2>
+          <h2 class="section-title"><span class="highlight">Me</span>ssage Analysis</h2>
         </div>
         <div class="section-content">
           <p class="intro-text">
@@ -1534,10 +1561,11 @@
     </div>
 
     <script>
-      const API_KEY = "";
+      const API_KEY = "xxx";
       const VERSION = "1.0.12";
 
       document.addEventListener("DOMContentLoaded", function () {
+        const header = document.getElementById("site-header");
         const dropZone = document.getElementById("drop-zone");
         const fileInput = document.getElementById("file-input");
         const fileInfoContainer = document.getElementById("file-info-container");
@@ -1572,6 +1600,23 @@
         const creativityValue = document.getElementById("creativity-value");
 
         let conversationHistory = [];
+        
+        // Header scroll behavior variables
+        let lastScrollTop = 0;
+        
+        // Add scroll event listener for header show/hide behavior
+        window.addEventListener("scroll", function() {
+          let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+          
+          if (currentScroll > lastScrollTop && currentScroll > 60) {
+            // Scrolling down
+            header.classList.add("header-hidden");
+          } else {
+            // Scrolling up
+            header.classList.remove("header-hidden");
+          }
+          lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
+        }, false);
 
         // Toast function with theme-consistent colors
         function showToast(message, type = "info") {
