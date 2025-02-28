@@ -58,30 +58,48 @@
       }
 
       @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
       @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.05); }
-        100% { transform: scale(1); }
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+        }
       }
       @keyframes shimmer {
-        0% { background-position: -200% 0; }
-        100% { background-position: 200% 0; }
+        0% {
+          background-position: -200% 0;
+        }
+        100% {
+          background-position: 200% 0;
+        }
       }
       @keyframes rotate {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
       }
-
       * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
         font-family: var(--font-primary);
       }
-
       body {
         background: var(--bg-primary);
         color: var(--text-primary);
@@ -89,10 +107,17 @@
         display: flex;
         flex-direction: column;
         overflow-x: hidden;
-        background-image: radial-gradient(circle at 10% 20%, rgba(125, 95, 255, 0.05) 0%, transparent 30%),
-          radial-gradient(circle at 90% 80%, rgba(94, 114, 235, 0.05) 0%, transparent 30%);
+        background-image: radial-gradient(
+            circle at 10% 20%,
+            rgba(125, 95, 255, 0.05) 0%,
+            transparent 30%
+          ),
+          radial-gradient(
+            circle at 90% 80%,
+            rgba(94, 114, 235, 0.05) 0%,
+            transparent 30%
+          );
       }
-
       header {
         padding: 1.5rem;
         display: flex;
@@ -106,7 +131,6 @@
         background-color: rgba(18, 18, 18, 0.85);
         border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       }
-
       .logo {
         display: flex;
         align-items: center;
@@ -130,7 +154,6 @@
         background-clip: text;
         -webkit-text-fill-color: transparent;
       }
-
       .header-actions {
         display: flex;
         gap: 1rem;
@@ -146,7 +169,6 @@
         align-items: center;
         justify-content: center;
       }
-
       .btn {
         padding: 0.6rem 1.2rem;
         border-radius: var(--radius-md);
@@ -208,7 +230,6 @@
         stroke-width: 2;
         fill: none;
       }
-
       main {
         flex: 1;
         display: flex;
@@ -245,7 +266,6 @@
       .section-content {
         padding: 1.5rem;
       }
-
       .drag-area {
         border: 2px dashed rgba(255, 255, 255, 0.1);
         border-radius: var(--radius-md);
@@ -294,7 +314,6 @@
         font-size: 0.9rem;
         color: var(--text-tertiary);
       }
-
       .file-info {
         margin-top: 1rem;
         display: flex;
@@ -619,21 +638,6 @@
       .color-orange {
         background: linear-gradient(135deg, #ffce5e, #ff8f5e);
       }
-      .api-key-input {
-        background: var(--bg-tertiary);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: var(--radius-md);
-        padding: 0.75rem 1rem;
-        color: var(--text-primary);
-        font-size: 0.9rem;
-        width: 100%;
-        transition: all var(--transition-normal);
-      }
-      .api-key-input:focus {
-        outline: none;
-        border-color: var(--accent-primary);
-        box-shadow: 0 0 0 2px rgba(125, 95, 255, 0.2);
-      }
       /* Conversation History */
       #conversation-history {
         margin-bottom: 1rem;
@@ -656,7 +660,7 @@
         background: rgba(255, 255, 255, 0.1);
         text-align: left;
       }
-      /* Help Modal (Onboarding) */
+      /* Help Modal */
       #help-modal {
         position: fixed;
         top: 0;
@@ -705,13 +709,12 @@
         opacity: 0;
         animation: fadeIn 0.5s forwards;
       }
-      /* Settings: Hide by default, toggle via class */
-      #settings-section {
+      /* Settings: Remove API key UI elements */
+      #settings-section .api-key-input,
+      #settings-section #save-api-key {
         display: none;
       }
-      #settings-section.active-settings {
-        display: block;
-      }
+      /* Settings section remains for other sliders and options */
       @media (max-width: 768px) {
         .section-header { padding: 1.25rem; }
         .section-content { padding: 1.25rem; }
@@ -1050,12 +1053,8 @@
               <div class="color-option color-orange" data-color="orange"></div>
             </div>
 
-            <h3 style="margin: 1.5rem 0 0.75rem 0; font-size: 1rem; color: var(--text-secondary);">
-              OpenAI API Key
-            </h3>
-            <input type="password" class="api-key-input" id="api-key-input" placeholder="Enter your OpenAI API key" />
-            <button class="btn btn-primary" id="save-api-key" style="margin-top: 1rem;">Save</button>
-
+            <!-- API Key UI removed in favor of backend constant -->
+            <!-- Background image URL option remains -->
             <h3 style="margin: 1.5rem 0 0.75rem 0; font-size: 1rem; color: var(--text-secondary);">
               Background Image URL
             </h3>
@@ -1078,13 +1077,16 @@
           • Your conversation history appears in the chat area.<br />
           • Type your message and hit Send to get a response powered by ChatGPT‑4.<br />
           • Adjust response length and creativity in Settings.<br />
-          • Save your OpenAI API key and customize your background.
+          • Customize the background and theme as desired.
         </p>
         <button class="btn btn-primary" id="close-help">Close</button>
       </div>
     </div>
 
     <script>
+      // Define API key as a constant (backend key, not editable in the UI)
+      const API_KEY = "sk-proj gbr8hqNPZVuQrBFMZO_5nnJin6NudXm_LrNIRnsgYtgwIdxjxiNRPzXYqLhmzjxQ9T9zcrm5lET3BlbkFJ6qOVPpeovMR0hwWmRf0ZCb8pRHTfJmbrPn1Mce6CGAD_Enddr--OYQoLpIuZRKb_h_2R3F_MMA";
+
       document.addEventListener("DOMContentLoaded", function () {
         // DOM Elements
         const dropZone = document.getElementById("drop-zone");
@@ -1100,7 +1102,6 @@
         const messageInput = document.getElementById("message-input");
         const sendButton = document.getElementById("send-button");
         const uploadButton = document.getElementById("upload-button");
-        const saveApiKeyButton = document.getElementById("save-api-key");
         const themeToggle = document.getElementById("theme-toggle");
         const helpToggle = document.getElementById("help-toggle");
         const helpModal = document.getElementById("help-modal");
@@ -1217,12 +1218,10 @@
             showToast("Analysis complete", "success");
           }, 2000);
         });
-
         // Toggle settings section
         settingsToggle.addEventListener("click", () => {
           settingsSection.classList.toggle("active-settings");
         });
-
         // Response modes selection
         modeCards.forEach((card) => {
           card.addEventListener("click", () => {
@@ -1230,7 +1229,6 @@
             card.classList.add("active");
           });
         });
-
         // Update conversation history UI
         function updateConversationHistory() {
           conversationHistoryDiv.innerHTML = "";
@@ -1242,7 +1240,6 @@
           });
           conversationHistoryDiv.scrollTop = conversationHistoryDiv.scrollHeight;
         }
-
         // Send message using OpenAI API
         async function sendMessage() {
           const userMessage = messageInput.value.trim();
@@ -1258,9 +1255,10 @@
               content: "You are a helpful assistant with a " + activeMode + " tone.",
             });
           }
-          const apiKey = document.getElementById("api-key-input").value.trim();
+          // Use the constant API_KEY defined at the top
+          const apiKey = API_KEY;
           if (!apiKey) {
-            showToast("Please enter your OpenAI API key in Settings.", "error");
+            showToast("No API key available.", "error");
             return;
           }
           // Map creativity slider to temperature
@@ -1306,7 +1304,6 @@
             showToast("Error: " + error.message, "error");
           }
         }
-
         sendButton.addEventListener("click", sendMessage);
         messageInput.addEventListener("keydown", (e) => {
           if (e.key === "Enter" && !e.shiftKey) {
@@ -1314,7 +1311,6 @@
             sendMessage();
           }
         });
-
         // Sliders functionality
         lengthSlider.addEventListener("input", () => {
           const value = lengthSlider.value;
@@ -1356,7 +1352,6 @@
           document.documentElement.style.setProperty("--bg-secondary", `rgba(30, 30, 30, ${1 - contrast})`);
           document.documentElement.style.setProperty("--bg-tertiary", `rgba(37, 37, 37, ${1 - contrast})`);
         });
-
         colorOptions.forEach((option) => {
           option.addEventListener("click", () => {
             colorOptions.forEach((o) => o.classList.remove("active"));
@@ -1368,56 +1363,18 @@
         function updateAccentColor(color) {
           let primary, secondary;
           switch (color) {
-            case "purple":
-              primary = "#7d5fff";
-              secondary = "#5e72eb";
-              break;
-            case "blue":
-              primary = "#5e8fff";
-              secondary = "#5e72eb";
-              break;
-            case "green":
-              primary = "#5effce";
-              secondary = "#5eff8f";
-              break;
-            case "pink":
-              primary = "#ff5ece";
-              secondary = "#ff5e8f";
-              break;
-            case "orange":
-              primary = "#ffce5e";
-              secondary = "#ff8f5e";
-              break;
+            case "purple": primary = "#7d5fff"; secondary = "#5e72eb"; break;
+            case "blue": primary = "#5e8fff"; secondary = "#5e72eb"; break;
+            case "green": primary = "#5effce"; secondary = "#5eff8f"; break;
+            case "pink": primary = "#ff5ece"; secondary = "#ff5e8f"; break;
+            case "orange": primary = "#ffce5e"; secondary = "#ff8f5e"; break;
           }
           document.documentElement.style.setProperty("--accent-primary", primary);
           document.documentElement.style.setProperty("--accent-secondary", secondary);
         }
-
         messageInput.addEventListener("input", function () {
           this.style.height = "auto";
           this.style.height = this.scrollHeight + "px";
-        });
-
-        saveApiKeyButton.addEventListener("click", () => {
-          const apiKey = document.getElementById("api-key-input").value.trim();
-          if (apiKey) {
-            localStorage.setItem("openai_api_key", apiKey);
-            showToast("API key saved successfully", "success");
-          } else {
-            showToast("Please enter an API key", "error");
-          }
-        });
-
-        // Background Image customization
-        setBgButton.addEventListener("click", () => {
-          const url = bgUrlInput.value.trim();
-          if (url) {
-            document.body.style.backgroundImage = `url('${url}')`;
-            showToast("Background updated", "success");
-          } else {
-            document.body.style.backgroundImage = "";
-            showToast("Background reset to default", "success");
-          }
         });
       });
     </script>
