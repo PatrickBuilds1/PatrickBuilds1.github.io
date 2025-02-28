@@ -2,81 +2,91 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ResponseBot - AI-Powered Messaging Assistant</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Personalized Convo Bot - AI-Powered Messaging Assistant</title>
     <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+      
       :root {
-        --bg-primary-dark: #121212;
-        --bg-secondary-dark: #1e1e1e;
-        --bg-tertiary-dark: #252525;
-        --bg-primary-light: #ffffff;
-        --bg-secondary-light: #f5f5f5;
-        --bg-tertiary-light: #e0e0e0;
+        /* Dark Theme Variables (Default) */
+        --bg-primary: #181818;
+        --bg-secondary: #1f1f1f;
+        --bg-tertiary: #2a2a2a;
         --accent-primary: #7d5fff;
         --accent-secondary: #5e72eb;
-        --text-primary-dark: #ffffff;
-        --text-secondary-dark: #b3b3b3;
-        --text-primary-light: #333333;
-        --text-secondary-light: #555555;
-        --text-tertiary: #808080;
+        --text-primary: #ffffff;
+        --text-secondary: #cccccc;
+        --text-tertiary: #888888;
         --danger: #ff5e5e;
-        --success: #5eff8f;
+        --success: #5e9dff; /* Changed from lime green to blue-ish */
         --warning: #ffce5e;
         --info: #5eceff;
         --neutral: #5e8fff;
         --witty: #ff5ece;
         --charming: #5effce;
         --personalized: #ce5eff;
+        --structure: #ff8f5e; /* New color for message structure */
+        --flow: #42c6ff; /* New color for conversation flow */
+        --toast-success: #5e9dff; /* Changed from lime green to blue-ish */
+        --toast-error: #ff5e5e;
+        --toast-info: rgba(0, 0, 0, 0.8);
+        --user-message-bg: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        --bot-message-bg: #444444;
+
         --radius-sm: 6px;
         --radius-md: 12px;
         --radius-lg: 18px;
-        --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
-        --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
-        --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+
+        --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+        --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+        --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+
         --transition-fast: 0.15s ease;
-        --transition-normal: 0.25s ease;
+        --transition-normal: 0.3s ease;
         --transition-slow: 0.4s ease;
-        --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+        --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        
+        /* Standard button styles */
+        --btn-padding: 0.6rem 1rem;
+        --btn-font-size: 0.85rem;
+        --btn-font-weight: 600;
       }
-      /* Default dark theme */
-      body {
-        --bg-primary: var(--bg-primary-dark);
-        --bg-secondary: var(--bg-secondary-dark);
-        --bg-tertiary: var(--bg-tertiary-dark);
-        --text-primary: var(--text-primary-dark);
-        --text-secondary: var(--text-secondary-dark);
+
+      /* Light Theme Class */
+      .light-mode {
+        /* Light background colors */
+        --bg-primary: #f9f9f9;
+        --bg-secondary: #ffffff;
+        --bg-tertiary: #f0f0f0;
+
+        /* Light text colors */
+        --text-primary: #333333;
+        --text-secondary: #555555;
+        --text-tertiary: #808080;
+
+        /* Lighter shadows */
+        --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+        --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+        --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
+        
+        /* Light mode message colors */
+        --user-message-bg: #007aff;
+        --bot-message-bg: #e5e5ea;
+        
+        /* Light mode toast colors - changed to be theme-consistent */
+        --toast-success: #007aff;
+        --toast-error: #FF3B30;
+        --toast-info: rgba(50, 50, 50, 0.9);
       }
-      /* Light theme class */
-      .light-theme {
-        --bg-primary: var(--bg-primary-light);
-        --bg-secondary: var(--bg-secondary-light);
-        --bg-tertiary: var(--bg-tertiary-light);
-        --text-primary: var(--text-primary-light);
-        --text-secondary: var(--text-secondary-light);
-      }
-      @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-      @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.05); }
-        100% { transform: scale(1); }
-      }
-      @keyframes shimmer {
-        0% { background-position: -200% 0; }
-        100% { background-position: 200% 0; }
-      }
-      @keyframes rotate {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-      }
+
       * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
         font-family: var(--font-primary);
       }
+
       body {
         background: var(--bg-primary);
         color: var(--text-primary);
@@ -84,9 +94,8 @@
         display: flex;
         flex-direction: column;
         overflow-x: hidden;
-        background-image: radial-gradient(circle at 10% 20%, rgba(125, 95, 255, 0.05) 0%, transparent 30%),
-          radial-gradient(circle at 90% 80%, rgba(94, 114, 235, 0.05) 0%, transparent 30%);
       }
+
       header {
         padding: 1.5rem;
         display: flex;
@@ -97,14 +106,26 @@
         position: sticky;
         top: 0;
         z-index: 10;
-        background-color: rgba(18, 18, 18, 0.85);
+        background-color: rgba(0, 0, 0, 0.75);
         border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       }
+      .light-mode header {
+        background-color: rgba(245, 245, 245, 0.9);
+        border-bottom: 1px solid #cccccc;
+      }
+
       .logo {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .logo-main {
         display: flex;
         align-items: center;
         gap: 0.75rem;
       }
+
       .logo-icon {
         width: 32px;
         height: 32px;
@@ -115,90 +136,115 @@
         justify-content: center;
         box-shadow: var(--shadow-sm);
       }
-      .logo-text {
+      
+      .logo-text a {
         font-weight: 700;
-        font-size: 1.5rem;
+        font-size: 1.4rem;
         background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
         -webkit-background-clip: text;
         background-clip: text;
         -webkit-text-fill-color: transparent;
+        text-decoration: none;
       }
+      
+      .logo-text a:hover {
+        opacity: 0.8;
+      }
+      
+      .tagline {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin-left: 2.5rem;
+        margin-top: 0.2rem;
+        font-style: italic;
+      }
+
       .header-actions {
         display: flex;
         gap: 1rem;
         align-items: center;
       }
-      /* Ensure toggle buttons are square and center their icons */
-      #settings-toggle,
-      #theme-toggle,
-      #help-toggle {
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
+      
+      /* Standardized button styles */
       .btn {
-        padding: 0.6rem 1.2rem;
-        border-radius: var(--radius-md);
-        border: none;
-        font-weight: 600;
-        font-size: 0.875rem;
-        cursor: pointer;
-        transition: all var(--transition-normal);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        box-shadow: var(--shadow-sm);
-        position: relative;
-        overflow: hidden;
-      }
-      #settings-toggle svg,
-      #theme-toggle svg,
-      #help-toggle svg,
-      #upload-button svg {
-        display: block;
-        margin: auto;
-      }
-      .btn::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-        background-size: 200% 100%;
-        opacity: 0;
-        transition: opacity var(--transition-normal);
-      }
-      .btn:hover::after {
-        opacity: 1;
-        animation: shimmer 1.5s infinite;
-      }
-      .btn-primary {
-        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-        color: var(--text-primary);
-      }
-      .btn-secondary {
         background: var(--bg-tertiary);
         color: var(--text-secondary);
         border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: var(--btn-padding);
+        border-radius: var(--radius-md);
+        font-weight: var(--btn-font-weight);
+        font-size: var(--btn-font-size);
+        cursor: pointer;
+        transition: all var(--transition-normal);
       }
-      .btn-icon {
-        padding: 0.6rem;
-        border-radius: 50%;
-        width: 36px;
-        height: 36px;
+      .btn:hover {
+        background: rgba(125, 95, 255, 0.15);
       }
-      .icon {
-        width: 20px;
-        height: 20px;
-        stroke: currentColor;
-        stroke-width: 2;
-        fill: none;
+      .light-mode .btn {
+        background: #eeeeee;
+        color: #333333;
+        border: 1px solid #cccccc;
       }
+      .light-mode .btn:hover {
+        background: #ddd;
+      }
+      
+      .btn-primary {
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        color: var(--text-primary);
+        border: none;
+      }
+      .light-mode .btn-primary {
+        background: #007aff;
+        color: #ffffff;
+      }
+      .btn-primary:hover {
+        opacity: 0.9;
+      }
+      
+      .header-actions button {
+        background: var(--bg-tertiary);
+        color: var(--text-secondary);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: var(--btn-padding);
+        border-radius: var(--radius-md);
+        font-weight: var(--btn-font-weight);
+        font-size: var(--btn-font-size);
+        cursor: pointer;
+        transition: all var(--transition-normal);
+      }
+      .header-actions button:hover {
+        background: rgba(125, 95, 255, 0.15);
+      }
+      .light-mode .header-actions button {
+        background: #eeeeee;
+        color: #333333;
+        border: 1px solid #cccccc;
+      }
+      .light-mode .header-actions button:hover {
+        background: #ddd;
+      }
+
+      #theme-toggle::before {
+        content: "Theme";
+      }
+      #help-toggle::before {
+        content: "Help";
+      }
+      #upload-button {
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        color: var(--text-primary);
+      }
+      #upload-button::before {
+        content: "Upload";
+        margin-right: 0.5rem;
+      }
+      .light-mode #upload-button {
+        background: #007aff;
+        color: #ffffff;
+        border: none;
+      }
+
       main {
         flex: 1;
         display: flex;
@@ -207,34 +253,96 @@
         max-width: 1400px;
         margin: 0 auto;
         width: 100%;
-        gap: 2rem;
-        animation: fadeIn 0.5s ease;
       }
+
       section {
         border-radius: var(--radius-lg);
         background: var(--bg-secondary);
         box-shadow: var(--shadow-md);
         overflow: hidden;
         transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+        margin-bottom: 1.5rem;
       }
       section:hover {
         transform: translateY(-2px);
         box-shadow: var(--shadow-lg);
       }
+
+      /* Enhanced section header with gradient background */
       .section-header {
         padding: 1.5rem;
         border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         display: flex;
         align-items: center;
         justify-content: space-between;
+        background: linear-gradient(90deg, rgba(125, 95, 255, 0.2), rgba(94, 114, 235, 0.1));
       }
+      .light-mode .section-header {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        background: linear-gradient(90deg, rgba(0, 122, 255, 0.1), rgba(94, 114, 235, 0.05));
+      }
+      
+      /* Enhanced section title */
       .section-title {
-        font-size: 1.25rem;
-        font-weight: 600;
+        font-size: 1.4rem;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+        position: relative;
       }
+      
+      .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -6px;
+        left: 0;
+        width: 40px;
+        height: 3px;
+        background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+        border-radius: 3px;
+      }
+      
       .section-content {
         padding: 1.5rem;
       }
+
+      /* Enhanced intro text */
+      .intro-text {
+        margin-bottom: 1.5rem;
+        font-size: 1rem;
+        color: var(--text-secondary);
+        line-height: 1.7;
+        background: rgba(125, 95, 255, 0.05);
+        padding: 1.5rem;
+        border-radius: var(--radius-md);
+        border-left: 4px solid var(--accent-primary);
+      }
+      
+      .intro-text strong {
+        color: var(--text-primary);
+        font-weight: 600;
+      }
+
+      /* Export instructions with improved formatting */
+      .export-instructions {
+        margin: 1.5rem 0;
+        padding: 1rem;
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-md);
+        border-left: 4px solid var(--accent-primary);
+      }
+      
+      .export-instructions h3 {
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+        font-size: 1rem;
+      }
+      
+      .export-instructions p {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        line-height: 1.5;
+      }
+
       .drag-area {
         border: 2px dashed rgba(255, 255, 255, 0.1);
         border-radius: var(--radius-md);
@@ -251,6 +359,9 @@
         gap: 1rem;
         min-height: 240px;
       }
+      .light-mode .drag-area {
+        border: 2px dashed rgba(0, 0, 0, 0.1);
+      }
       .drag-area:hover,
       .drag-area.active {
         border-color: var(--accent-primary);
@@ -259,15 +370,9 @@
       .drag-icon {
         width: 64px;
         height: 64px;
-        stroke: var(--text-secondary);
-        stroke-width: 1.5;
-        fill: none;
+        fill: currentColor;
+        opacity: 0.8;
         transition: all var(--transition-normal);
-      }
-      .drag-area:hover .drag-icon,
-      .drag-area.active .drag-icon {
-        stroke: var(--accent-primary);
-        transform: scale(1.1);
       }
       .drag-text {
         font-size: 1.2rem;
@@ -275,14 +380,11 @@
         margin-bottom: 0.5rem;
         transition: all var(--transition-normal);
       }
-      .drag-area:hover .drag-text,
-      .drag-area.active .drag-text {
-        color: var(--text-primary);
-      }
       .drag-hint {
         font-size: 0.9rem;
         color: var(--text-tertiary);
       }
+
       .file-info {
         margin-top: 1rem;
         display: flex;
@@ -293,13 +395,11 @@
         border-radius: var(--radius-md);
         width: 100%;
         max-width: 400px;
-        animation: fadeIn 0.3s ease;
       }
       .file-icon {
         width: 24px;
         height: 24px;
-        stroke: var(--text-secondary);
-        fill: none;
+        fill: currentColor;
       }
       .file-name {
         flex: 1;
@@ -312,13 +412,13 @@
         cursor: pointer;
         width: 20px;
         height: 20px;
-        stroke: currentColor;
-        fill: none;
+        fill: currentColor;
         transition: all var(--transition-fast);
       }
       .file-remove:hover {
         transform: scale(1.1);
       }
+
       .analyze-button {
         margin-top: 1.5rem;
         width: 100%;
@@ -327,6 +427,15 @@
         font-size: 1rem;
         position: relative;
         overflow: hidden;
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        color: var(--text-primary);
+        border: none;
+        border-radius: var(--radius-md);
+        cursor: pointer;
+      }
+      .light-mode .analyze-button {
+        background: #007aff; /* iOS-style button color in light mode */
+        color: #fff;
       }
       .analyze-button .spinner {
         display: none;
@@ -345,20 +454,22 @@
       .analyzing .btn-text {
         opacity: 0.7;
       }
+
       .results {
         display: none;
         flex-direction: column;
-        gap: 2rem;
-        animation: fadeIn 0.5s ease;
+        gap: 1rem; /* Reduced gap to close spacing */
       }
       .results.active {
         display: flex;
       }
+
       .result-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         gap: 1.5rem;
       }
+
       .result-card {
         background: var(--bg-tertiary);
         border-radius: var(--radius-md);
@@ -368,6 +479,9 @@
         gap: 1rem;
         transition: transform var(--transition-normal), box-shadow var(--transition-normal);
         border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .light-mode .result-card {
+        border: 1px solid rgba(0, 0, 0, 0.05);
       }
       .result-card:hover {
         transform: translateY(-2px);
@@ -385,6 +499,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        fill: currentColor;
       }
       .result-title {
         font-size: 1.1rem;
@@ -397,6 +512,9 @@
         border-radius: 3px;
         overflow: hidden;
         position: relative;
+      }
+      .light-mode .progress-bar {
+        background: rgba(0, 0, 0, 0.1);
       }
       .progress-fill {
         height: 100%;
@@ -413,6 +531,7 @@
         color: var(--text-secondary);
         line-height: 1.5;
       }
+
       .personality-icon {
         background: linear-gradient(135deg, var(--info), var(--neutral));
       }
@@ -425,6 +544,13 @@
       .emoji-icon {
         background: linear-gradient(135deg, var(--witty), var(--charming));
       }
+      .structure-icon {
+        background: linear-gradient(135deg, var(--structure), #ff6b2b);
+      }
+      .flow-icon {
+        background: linear-gradient(135deg, var(--flow), #3e97ff);
+      }
+
       .response-modes {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -455,6 +581,9 @@
         transition: opacity var(--transition-normal);
         pointer-events: none;
       }
+      .light-mode .mode-card::after {
+        background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.05), transparent);
+      }
       .mode-card:hover::after {
         opacity: 1;
         animation: shimmer 2s infinite;
@@ -475,6 +604,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        fill: currentColor;
       }
       .mode-title {
         font-size: 1.1rem;
@@ -485,42 +615,179 @@
         color: var(--text-secondary);
         line-height: 1.5;
       }
+      .personalized-icon {
+        background: linear-gradient(135deg, var(--personalized), #ab46cc);
+      }
+      .charming-icon {
+        background: linear-gradient(135deg, var(--charming), #46ccab);
+      }
       .neutral-icon {
         background: linear-gradient(135deg, var(--neutral), #4671cc);
       }
       .witty-icon {
         background: linear-gradient(135deg, var(--witty), #cc46ab);
       }
-      .charming-icon {
-        background: linear-gradient(135deg, var(--charming), #46ccab);
+
+      /* Chat controls container - for input and buttons */
+      .chat-controls {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-top: 1rem;
       }
-      .personalized-icon {
-        background: linear-gradient(135deg, var(--personalized), #ab46cc);
+      
+      /* Clear chat button styling */
+      #clear-chat {
+        background: var(--bg-tertiary);
+        color: var(--text-secondary);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 0.75rem 1rem;
+        border-radius: var(--radius-md);
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all var(--transition-normal);
       }
-      .slider-container {
+      
+      #clear-chat:hover {
+        background: rgba(255, 94, 94, 0.15);
+        color: var(--danger);
+      }
+      
+      .light-mode #clear-chat {
+        background: #eeeeee;
+        border: 1px solid #cccccc;
+      }
+      
+      .light-mode #clear-chat:hover {
+        background: rgba(255, 59, 48, 0.1);
+        color: #FF3B30;
+      }
+
+      /* Chat input area with gap between input and button */
+      .query-input {
+        display: flex;
+        align-items: center;
+        background: var(--bg-tertiary);
+        padding: 1rem;
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        margin-top: 1rem;
+        gap: 0.75rem; /* Added gap between input and button */
+        flex: 1;
+      }
+      .message-input {
+        flex: 1;
+        background: var(--bg-tertiary);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: var(--radius-md);
+        padding: 0.75rem 1rem;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        text-align: left;
+        resize: vertical;
+        overflow-y: auto;
+        min-height: 48px;
+        transition: all var(--transition-normal);
+      }
+      .light-mode .message-input {
+        border: 1px solid rgba(0, 0, 0, 0.1);
+      }
+      .message-input:focus {
+        outline: none;
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 0 2px rgba(125, 95, 255, 0.2);
+      }
+      .send-button {
+        padding: 0.75rem 1.25rem;
+        border-radius: var(--radius-md);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        color: var(--text-primary);
+        border: none;
+        cursor: pointer;
+        min-width: 80px;
+      }
+      .light-mode .send-button {
+        background: #007aff;
+        color: #ffffff;
+      }
+      .send-button span {
+        font-size: 0.9rem;
+      }
+
+      /* Chat bubbles styled like iMessage */
+      #conversation-history {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-md);
+        max-height: 250px;
+        overflow-y: auto;
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
+        display: none; /* Hidden by default until first message */
+      }
+      #conversation-history.active {
+        display: flex;
+      }
+      .message {
+        margin-bottom: 0.75rem;
+        padding: 0.75rem 1rem;
+        border-radius: 18px;
+        max-width: 75%;
+        line-height: 1.4;
+        word-wrap: break-word;
+      }
+      .user-message {
+        background: var(--user-message-bg);
+        color: #fff;
+        align-self: flex-end; /* Position on right */
+        border-bottom-right-radius: 4px; /* iMessage style */
+      }
+      .bot-message {
+        background: var(--bot-message-bg);
+        align-self: flex-start; /* Position on left */
+        color: var(--text-primary);
+        border-bottom-left-radius: 4px; /* iMessage style */
+      }
+      .light-mode .bot-message {
+        color: #333333;
+      }
+
+      /* Settings Panel with consistent margin */
+      .settings-panel {
+        display: none;
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        padding: 1rem 1.5rem;
+        border-radius: var(--radius-md);
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-normal);
+      }
+      .settings-panel.active {
+        display: block;
+      }
+      .settings-panel h3 {
+        margin-bottom: 1rem;
+        font-size: 1rem;
+        color: var(--text-secondary);
+        text-align: center;
+      }
+      .slider-container {
+        width: 100%;
         margin-bottom: 1.5rem;
       }
       .slider-label {
         display: flex;
         justify-content: space-between;
         align-items: center;
-      }
-      .slider-title {
-        font-size: 0.9rem;
-        font-weight: 500;
-        color: var(--text-secondary);
-      }
-      .slider-value {
-        font-size: 0.8rem;
-        padding: 0.2rem 0.5rem;
-        background: var(--bg-tertiary);
-        border-radius: var(--radius-sm);
-        color: var(--text-secondary);
-        min-width: 40px;
-        text-align: center;
+        margin-bottom: 0.5rem;
       }
       .slider {
         -webkit-appearance: none;
@@ -530,6 +797,9 @@
         background: rgba(255, 255, 255, 0.1);
         outline: none;
         transition: background var(--transition-normal);
+      }
+      .light-mode .slider {
+        background: rgba(0, 0, 0, 0.1);
       }
       .slider::-webkit-slider-thumb {
         -webkit-appearance: none;
@@ -561,75 +831,67 @@
         transform: scale(1.1);
         box-shadow: 0 0 10px rgba(125, 95, 255, 0.4);
       }
-      .color-options {
-        display: flex;
-        gap: 0.75rem;
-        margin-bottom: 1.5rem;
+
+      /* Toast notifications with theme-consistent colors */
+      #toast-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 200;
       }
-      .color-option {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        cursor: pointer;
-        transition: all var(--transition-normal);
-        position: relative;
-        border: 2px solid var(--bg-tertiary);
-      }
-      .color-option:hover {
-        transform: scale(1.1);
-      }
-      .color-option.active {
-        transform: scale(1.1);
-      }
-      .color-option.active::after {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        background: var(--bg-tertiary);
-      }
-      .color-purple {
-        background: linear-gradient(135deg, #7d5fff, #5e72eb);
-      }
-      .color-blue {
-        background: linear-gradient(135deg, #5e8fff, #5e72eb);
-      }
-      .color-green {
-        background: linear-gradient(135deg, #5effce, #5eff8f);
-      }
-      .color-pink {
-        background: linear-gradient(135deg, #ff5ece, #ff5e8f);
-      }
-      .color-orange {
-        background: linear-gradient(135deg, #ffce5e, #ff8f5e);
-      }
-      /* Conversation History */
-      #conversation-history {
-        margin-bottom: 1rem;
-        padding: 1rem;
-        background: var(--bg-tertiary);
+      .toast {
+        padding: 0.75rem 1rem;
+        margin-top: 10px;
         border-radius: var(--radius-md);
-        max-height: 300px;
-        overflow-y: auto;
+        opacity: 0;
+        animation: fadeIn 0.5s forwards;
+        color: var(--text-primary);
       }
-      .message {
-        margin-bottom: 0.5rem;
-        padding: 0.5rem;
-        border-radius: var(--radius-sm);
+      
+      .toast.success {
+        background: var(--toast-success);
+        color: #fff;
       }
-      .user-message {
-        background: rgba(0, 0, 0, 0.2);
-        text-align: right;
+      
+      .toast.error {
+        background: var(--toast-error);
+        color: #fff;
       }
-      .bot-message {
-        background: rgba(255, 255, 255, 0.1);
-        text-align: left;
+      
+      .toast.info {
+        background: var(--toast-info);
+        color: #fff;
       }
-      /* Help Modal */
+
+      footer {
+        text-align: center;
+        padding: 1.5rem;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        margin-top: 2rem;
+      }
+      
+      .light-mode footer {
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+      }
+      
+      .privacy-notice {
+        margin-top: 0.5rem;
+        font-size: 0.75rem;
+        line-height: 1.4;
+        color: var(--text-tertiary);
+        max-width: 600px;
+        margin: 0.5rem auto 0 auto;
+      }
+      
+      .creator {
+        font-size: 0.75rem;
+        color: var(--text-tertiary);
+        margin-top: 0.5rem;
+      }
+
+      /* Help Modal styled to match the screenshot */
       #help-modal {
         position: fixed;
         top: 0;
@@ -642,126 +904,170 @@
         justify-content: center;
         z-index: 100;
       }
+      .light-mode #help-modal {
+        background: rgba(0, 0, 0, 0.4);
+      }
       #help-modal.active {
         display: flex;
       }
       #help-modal .modal-content {
         background: var(--bg-secondary);
-        padding: 2rem;
+        padding: 2.5rem;
         border-radius: var(--radius-md);
-        max-width: 500px;
+        max-width: 550px;
+        width: 90%;
+        box-shadow: var(--shadow-lg);
         text-align: center;
       }
-      #help-modal .modal-content h2 {
-        margin-bottom: 1rem;
+      
+      #help-modal h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 2rem;
       }
-      #help-modal .modal-content p {
-        margin-bottom: 1rem;
-        font-size: 0.9rem;
-      }
-      #help-modal .modal-content button {
-        margin-top: 1rem;
-      }
-      /* Toast Notifications */
-      #toast-container {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        z-index: 200;
-      }
-      .toast {
-        background: rgba(0, 0, 0, 0.8);
-        color: #fff;
-        padding: 0.75rem 1rem;
-        margin-top: 10px;
-        border-radius: var(--radius-md);
-        opacity: 0;
-        animation: fadeIn 0.5s forwards;
-      }
-      /* Settings: Remove API key UI elements */
-      #settings-section .api-key-input,
-      #settings-section #save-api-key {
-        display: none;
-      }
-      /* Version display for iteration tracking in the Upload section */
-      #version-display {
+      
+      #help-modal ul {
+        list-style: none;
         text-align: center;
-        font-size: 0.9rem;
-        margin-top: 1rem;
+        margin-bottom: 2rem;
+      }
+      
+      #help-modal li {
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+        line-height: 1.5;
         color: var(--text-secondary);
       }
+      
+      #help-modal .close-btn {
+        display: inline-block;
+        padding: 0.8rem 2.5rem;
+        background: #7d5fff;
+        color: white;
+        border: none;
+        border-radius: var(--radius-md);
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      
+      #help-modal .close-btn:hover {
+        opacity: 0.9;
+      }
+
+      /* Media Queries for Responsive Layout */
       @media (max-width: 768px) {
-        .section-header { padding: 1.25rem; }
-        .section-content { padding: 1.25rem; }
-        main { padding: 1.25rem; }
-        .drag-area { padding: 2rem 1rem; }
-        .result-grid, .response-modes { grid-template-columns: 1fr; }
+        header {
+          flex-direction: column;
+          gap: 1rem;
+        }
+        
+        .header-actions {
+          width: 100%;
+          justify-content: space-between;
+        }
+        
+        .query-input {
+          flex-direction: column;
+          gap: 0.75rem;
+        }
+        
+        .message-input {
+          width: 100%;
+        }
+        
+        .send-button {
+          width: 100%;
+        }
+        
+        .tagline {
+          margin-left: 0;
+          text-align: center;
+          margin-top: 0.5rem;
+        }
+        
+        .chat-controls {
+          flex-direction: column;
+        }
+        
+        #clear-chat {
+          width: 100%;
+        }
+        
+        #help-modal .modal-content {
+          padding: 1.5rem;
+          width: 95%;
+        }
       }
-      @media (max-width: 576px) {
-        .logo-text { display: none; }
-        .header-actions { gap: 0.5rem; }
-        .btn { padding: 0.5rem 1rem; font-size: 0.8rem; }
+
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
       }
-      @media (prefers-reduced-motion) {
-        * { animation: none !important; transition: none !important; }
+      @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+      }
+      @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
       }
     </style>
   </head>
   <body>
     <header>
       <div class="logo">
-        <div class="logo-icon">
-          <svg class="icon" viewBox="0 0 24 24">
-            <path d="M12 3c1.5 0 2.25 0 3 1.5 0.75 1.5 0.75 1.5 1.5 3 0.75-1.5 0.75-1.5 1.5-3 0.75-1.5 1.5-1.5 3-1.5-1.5 0-2.25 0-3-1.5-0.75-1.5-0.75-1.5-1.5-3-0.75 1.5-0.75 1.5-1.5 3-0.75 1.5-1.5 1.5-3 1.5z"></path>
-            <path d="M12 9c1 0 1.5 0 2 1 0.5 1 0.5 1 1 2 0.5-1 0.5-1 1-2 0.5-1 1-1 2-1-1.5 0-1.5 0-2 1z"></path>
-            <path d="M5.5 16c0.828 0 1.5 0.672 1.5 1.5s-0.672 1.5-1.5 1.5-1.5-0.672-1.5-1.5 0.672-1.5 1.5-1.5z"></path>
-          </svg>
+        <div class="logo-main">
+          <div class="logo-icon">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path
+                d="M12 3c1.5 0 2.25 0 3 1.5 0.75 1.5 0.75 1.5 1.5 3 0.75-1.5 0.75-1.5 1.5-3 0.75-1.5 1.5-1.5 3-1.5-1.5 0-2.25 0-3-1.5-0.75-1.5-0.75-1.5-1.5-3-0.75 1.5-0.75 1.5-1.5 3-0.75 1.5-1.5 1.5-3 1.5z"
+              ></path>
+              <path
+                d="M12 9c1 0 1.5 0 2 1 0.5 1 0.5 1 1 2 0.5-1 0.5-1 1-2 0.5-1 1-1 2-1-1.5 0-1.5 0-2 1z"
+              ></path>
+              <path
+                d="M5.5 16c0.828 0 1.5 0.672 1.5 1.5s-0.672 1.5-1.5 1.5-1.5-0.672-1.5-1.5 0.672-1.5 1.5-1.5z"
+              ></path>
+            </svg>
+          </div>
+          <div class="logo-text">
+            <a href="#upload-section">Personalized Convo Bot</a>
+          </div>
         </div>
-        <div class="logo-text">ResponseBot</div>
+        <div class="tagline">Be you, even when you're not there.</div>
       </div>
       <div class="header-actions">
-        <button class="btn btn-secondary tooltip" data-tooltip="Settings" id="settings-toggle">
-          <svg class="icon" viewBox="0 0 24 24">
-            <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82V9a1.65 1.65 0 0 0 1.51-1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-          </svg>
-        </button>
-        <button class="btn btn-secondary tooltip" data-tooltip="Toggle Theme" id="theme-toggle">
-          <svg class="icon" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10"></circle>
-          </svg>
-        </button>
-        <button class="btn btn-secondary tooltip" data-tooltip="Help" id="help-toggle">
-          <svg class="icon" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M12 8v4"></path>
-            <circle cx="12" cy="16" r="1"></circle>
-          </svg>
-        </button>
-        <button class="btn btn-primary" id="upload-button">
-          <svg class="icon" viewBox="0 0 24 24">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
-          <span>Upload</span>
-        </button>
+        <button id="theme-toggle" class="btn"></button>
+        <button id="help-toggle" class="btn"></button>
+        <button id="upload-button" class="btn btn-primary"></button>
       </div>
     </header>
 
     <main>
       <section id="upload-section">
         <div class="section-header">
-          <h2 class="section-title">Upload Messages</h2>
-          <span class="tooltip" data-tooltip="Upload your iMessage export">
-            <svg class="icon" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="16" x2="12" y2="12"></line>
-              <line x1="12" y1="8" x2="12" y2="8"></line>
-            </svg>
-          </span>
+          <h2 class="section-title">Message Analysis</h2>
         </div>
         <div class="section-content">
+          <p class="intro-text">
+            <strong>Personalized Convo Bot</strong> uses advanced AI to analyze your communication patterns and respond exactly like you would. 
+            Upload your messages, emails, or any text conversations to create a <strong>digital twin</strong> that captures your unique tone, 
+            style, humor, and personality traits. Whether you need help with customer responses, want to maintain connections 
+            during busy periods, or simply curious about your communication style, our tool gives you insights while 
+            preserving your authentic voice.
+          </p>
+
+          <!-- Improved export instructions with better formatting -->
+          <div class="export-instructions">
+            <h3>How to Export iMessage Data:</h3>
+            <p>
+              Open the Messages app on your Mac, select a conversation, then go to "File → Print." From the print dialog, select "Save as PDF" or export as text. 
+              Upload that file here for analysis.
+            </p>
+          </div>
+
           <div class="drag-area" id="drop-zone">
             <svg class="drag-icon" viewBox="0 0 24 24">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -772,6 +1078,7 @@
             <p class="drag-hint">or click to browse</p>
             <input type="file" id="file-input" style="display: none;" />
           </div>
+
           <div id="file-info-container" style="display: none;">
             <div class="file-info">
               <svg class="file-icon" viewBox="0 0 24 24">
@@ -784,14 +1091,10 @@
                 <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
             </div>
-            <button class="btn btn-primary analyze-button" id="analyze-button">
+            <button class="analyze-button btn btn-primary" id="analyze-button">
               <span class="btn-text">Analyze Messages</span>
               <div class="spinner"></div>
             </button>
-          </div>
-          <!-- Version display -->
-          <div id="version-display" style="text-align: center; margin-top: 1rem; font-size: 0.9rem;">
-            Version:
           </div>
         </div>
       </section>
@@ -799,17 +1102,11 @@
       <div class="results" id="results">
         <section id="analysis-section">
           <div class="section-header">
-            <h2 class="section-title">Message Analysis</h2>
-            <span class="tooltip" data-tooltip="AI-powered message analysis">
-              <svg class="icon" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="16" x2="12" y2="12"></line>
-                <line x1="12" y1="8" x2="12" y2="8"></line>
-              </svg>
-            </span>
+            <h2 class="section-title">Analysis Results</h2>
           </div>
           <div class="section-content">
             <div class="result-grid">
+              <!-- Personality Card -->
               <div class="result-card">
                 <div class="result-header">
                   <div class="result-icon personality-icon">
@@ -831,6 +1128,7 @@
                 </p>
               </div>
 
+              <!-- Response Pattern Card -->
               <div class="result-card">
                 <div class="result-header">
                   <div class="result-icon pattern-icon">
@@ -849,6 +1147,7 @@
                 </p>
               </div>
 
+              <!-- Sentiment Card -->
               <div class="result-card">
                 <div class="result-header">
                   <div class="result-icon sentiment-icon">
@@ -870,6 +1169,7 @@
                 </p>
               </div>
 
+              <!-- Emoji Usage Card -->
               <div class="result-card">
                 <div class="result-header">
                   <div class="result-icon emoji-icon">
@@ -890,26 +1190,118 @@
                   You use emojis selectively to emphasize points. Most commonly used: 😊, 👍, and 😂.
                 </p>
               </div>
+              
+              <!-- Message Structure Card - NEW -->
+              <div class="result-card">
+                <div class="result-header">
+                  <div class="result-icon structure-icon">
+                    <svg class="icon" viewBox="0 0 24 24">
+                      <line x1="8" y1="6" x2="21" y2="6"></line>
+                      <line x1="8" y1="12" x2="21" y2="12"></line>
+                      <line x1="8" y1="18" x2="21" y2="18"></line>
+                      <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                      <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                      <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
+                  </div>
+                  <h3 class="result-title">Message Structure</h3>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 70%; background: linear-gradient(to right, var(--structure), #ff6b2b);"></div>
+                </div>
+                <div class="result-value">Concise</div>
+                <p class="result-description">
+                  You tend to write in short, focused paragraphs. Your messages have a clear structure that makes your points easy to follow.
+                </p>
+              </div>
+              
+              <!-- Conversation Flow Card - NEW -->
+              <div class="result-card">
+                <div class="result-header">
+                  <div class="result-icon flow-icon">
+                    <svg class="icon" viewBox="0 0 24 24">
+                      <polyline points="17 1 21 5 17 9"></polyline>
+                      <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                      <polyline points="7 23 3 19 7 15"></polyline>
+                      <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+                    </svg>
+                  </div>
+                  <h3 class="result-title">Conversation Flow</h3>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 85%; background: linear-gradient(to right, var(--flow), #3e97ff);"></div>
+                </div>
+                <div class="result-value">Connective</div>
+                <p class="result-description">
+                  You naturally guide conversations with smooth transitions between topics. You often build on previous messages rather than abruptly changing subjects.
+                </p>
+              </div>
             </div>
           </div>
         </section>
 
+        <!-- Modes section with consistent styling -->
         <section id="modes-section">
           <div class="section-header">
             <h2 class="section-title">Response Modes</h2>
-            <span class="tooltip" data-tooltip="Select your preferred response style">
-              <svg class="icon" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="16" x2="12" y2="12"></line>
-                <line x1="12" y1="8" x2="12" y2="8"></line>
-              </svg>
-            </span>
+            <button class="btn" id="toggle-settings">
+              Settings
+            </button>
           </div>
           <div class="section-content">
-            <!-- Conversation History -->
-            <div id="conversation-history"></div>
+            <div class="settings-panel" id="settings-panel">
+              <h3>Response Settings</h3>
+              <div class="slider-container">
+                <div class="slider-label">
+                  <span class="slider-title">Response Length</span>
+                  <span class="slider-value" id="length-value">Medium</span>
+                </div>
+                <input type="range" min="1" max="5" value="3" class="slider" id="length-slider" />
+              </div>
+              <div class="slider-container">
+                <div class="slider-label">
+                  <span class="slider-title">Creativity Level</span>
+                  <span class="slider-value" id="creativity-value">Balanced</span>
+                </div>
+                <input type="range" min="1" max="5" value="3" class="slider" id="creativity-slider" />
+              </div>
+            </div>
+
             <div class="response-modes">
-              <div class="mode-card active" data-mode="neutral">
+              <div class="mode-card active" data-mode="personalized">
+                <div class="mode-header">
+                  <h3 class="mode-title">Personalized</h3>
+                  <div class="mode-icon personalized-icon">
+                    <svg class="icon" viewBox="0 0 24 24">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="9" cy="7" r="4"></circle>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                  </div>
+                </div>
+                <p class="mode-description">
+                  Responses that match your exact texting style and personality.
+                </p>
+              </div>
+
+              <div class="mode-card" data-mode="charming">
+                <div class="mode-header">
+                  <h3 class="mode-title">Charming</h3>
+                  <div class="mode-icon charming-icon">
+                    <svg class="icon" viewBox="0 0 24 24">
+                      <path
+                        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                      ></path>
+                    </svg>
+                  </div>
+                </div>
+                <p class="mode-description">
+                  Warm, engaging responses with a friendly and approachable tone.
+                </p>
+              </div>
+
+              <div class="mode-card" data-mode="neutral">
                 <div class="mode-header">
                   <h3 class="mode-title">Neutral</h3>
                   <div class="mode-icon neutral-icon">
@@ -940,135 +1332,58 @@
                   Clever, humorous responses with a touch of playful personality.
                 </p>
               </div>
+            </div>
 
-              <div class="mode-card" data-mode="charming">
-                <div class="mode-header">
-                  <h3 class="mode-title">Charming</h3>
-                  <div class="mode-icon charming-icon">
-                    <svg class="icon" viewBox="0 0 24 24">
-                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                    </svg>
-                  </div>
-                </div>
-                <p class="mode-description">
-                  Warm, engaging responses with a friendly and approachable tone.
-                </p>
+            <div class="chat-controls">
+              <div class="query-input">
+                <textarea
+                  class="message-input"
+                  id="message-input"
+                  placeholder="Type a message to get a response..."
+                ></textarea>
+                <button class="send-button btn btn-primary" id="send-button">
+                  <span>Send</span>
+                </button>
               </div>
-
-              <div class="mode-card" data-mode="personalized">
-                <div class="mode-header">
-                  <h3 class="mode-title">Personalized</h3>
-                  <div class="mode-icon personalized-icon">
-                    <svg class="icon" viewBox="0 0 24 24">
-                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                      <circle cx="9" cy="7" r="4"></circle>
-                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                    </svg>
-                  </div>
-                </div>
-                <p class="mode-description">
-                  Responses that match your exact texting style and personality.
-                </p>
-              </div>
+              <button id="clear-chat" class="btn">Clear Chat</button>
             </div>
 
-            <div class="query-input">
-              <textarea class="message-input" id="message-input" placeholder="Type a message to get a response..."></textarea>
-              <button class="btn btn-primary send-button" id="send-button">
-                <svg class="icon" viewBox="0 0 24 24">
-                  <line x1="22" y1="2" x2="11" y2="13"></line>
-                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                </svg>
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <section id="settings-section">
-          <div class="section-header">
-            <h2 class="section-title">Settings</h2>
-            <span class="tooltip" data-tooltip="Customize your experience">
-              <svg class="icon" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="16" x2="12" y2="12"></line>
-                <line x1="12" y1="8" x2="12" y2="8"></line>
-              </svg>
-            </span>
-          </div>
-          <div class="section-content">
-            <div class="slider-container">
-              <div class="slider-label">
-                <span class="slider-title">Response Length</span>
-                <span class="slider-value" id="length-value">Medium</span>
-              </div>
-              <input type="range" min="1" max="5" value="3" class="slider" id="length-slider" />
-            </div>
-
-            <div class="slider-container">
-              <div class="slider-label">
-                <span class="slider-title">Creativity Level</span>
-                <span class="slider-value" id="creativity-value">Balanced</span>
-              </div>
-              <input type="range" min="1" max="5" value="3" class="slider" id="creativity-slider" />
-            </div>
-
-            <div class="slider-container">
-              <div class="slider-label">
-                <span class="slider-title">Theme Contrast</span>
-                <span class="slider-value" id="contrast-value">Medium</span>
-              </div>
-              <input type="range" min="1" max="5" value="3" class="slider" id="contrast-slider" />
-            </div>
-
-            <h3 style="margin: 1.5rem 0 0.75rem 0; font-size: 1rem; color: var(--text-secondary);">
-              Accent Color
-            </h3>
-            <div class="color-options">
-              <div class="color-option color-purple active" data-color="purple"></div>
-              <div class="color-option color-blue" data-color="blue"></div>
-              <div class="color-option color-green" data-color="green"></div>
-              <div class="color-option color-pink" data-color="pink"></div>
-              <div class="color-option color-orange" data-color="orange"></div>
-            </div>
-
-            <!-- API key UI removed -->
-            <h3 style="margin: 1.5rem 0 0.75rem 0; font-size: 1rem; color: var(--text-secondary);">
-              Background Image URL
-            </h3>
-            <input type="text" class="api-key-input" id="bg-url-input" placeholder="Enter background image URL" />
-            <button class="btn btn-primary" id="set-bg" style="margin-top: 1rem;">Set Background</button>
+            <div id="conversation-history"></div>
           </div>
         </section>
       </div>
     </main>
 
-    <!-- Toast Container -->
+    <footer>
+      <div id="version-display"></div>
+      <div class="privacy-notice">
+        Your messages are processed locally and never shared with third parties. We respect your privacy.
+      </div>
+      <div class="creator">Site created by Patrick Hall.</div>
+    </footer>
+
     <div id="toast-container"></div>
 
-    <!-- Help Modal -->
+    <!-- Help Modal - Modified to match the screenshot -->
     <div id="help-modal">
       <div class="modal-content">
-        <h2>Welcome to ResponseBot!</h2>
-        <p>
-          • Upload your message file using the Upload section.<br />
-          • Your conversation history appears in the chat area.<br />
-          • Type your message and hit Send to get a response powered by ChatGPT‑4.<br />
-          • Adjust response length and creativity in Settings.<br />
-          • Customize the background and theme as desired.
-        </p>
-        <button class="btn btn-primary" id="close-help">Close</button>
+        <h2>Welcome to Personalized Convo Bot!</h2>
+        <ul>
+          <li>• Upload your message file using the Analysis section.</li>
+          <li>• Your conversation history appears in the chat area.</li>
+          <li>• Type your message and hit Send to get a response that matches your style.</li>
+          <li>• Adjust response length and creativity in Settings.</li>
+          <li>• Use the Clear Chat button to reset your conversation.</li>
+        </ul>
+        <button class="close-btn" id="close-help">Close</button>
       </div>
     </div>
 
     <script>
-      // Define the API key as a constant (backend key, not editable in the UI)
-      const API_KEY = "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";
-      // Define the version number for this iteration
-      const VERSION = "1.0.0";
+      const API_KEY = "xxx";
+      const VERSION = "1.0.12";
 
       document.addEventListener("DOMContentLoaded", function () {
-        // DOM Elements
         const dropZone = document.getElementById("drop-zone");
         const fileInput = document.getElementById("file-input");
         const fileInfoContainer = document.getElementById("file-info-container");
@@ -1076,50 +1391,36 @@
         const removeFile = document.getElementById("remove-file");
         const analyzeButton = document.getElementById("analyze-button");
         const results = document.getElementById("results");
-        const settingsToggle = document.getElementById("settings-toggle");
-        const settingsSection = document.getElementById("settings-section");
-        const modeCards = document.querySelectorAll(".mode-card");
-        const messageInput = document.getElementById("message-input");
-        const sendButton = document.getElementById("send-button");
-        const uploadButton = document.getElementById("upload-button");
         const themeToggle = document.getElementById("theme-toggle");
         const helpToggle = document.getElementById("help-toggle");
         const helpModal = document.getElementById("help-modal");
         const closeHelp = document.getElementById("close-help");
+        const uploadButton = document.getElementById("upload-button");
         const conversationHistoryDiv = document.getElementById("conversation-history");
-        const setBgButton = document.getElementById("set-bg");
-        const bgUrlInput = document.getElementById("bg-url-input");
         const versionDisplay = document.getElementById("version-display");
+        const modeCards = document.querySelectorAll(".mode-card");
+        const messageInput = document.getElementById("message-input");
+        const sendButton = document.getElementById("send-button");
+        const settingsPanel = document.getElementById("settings-panel");
+        const toggleSettings = document.getElementById("toggle-settings");
+        const clearChatButton = document.getElementById("clear-chat");
 
-        // Set version display text
-        versionDisplay.textContent = "Version: " + VERSION;
-
-        // Sliders
+        // Sliders for length & creativity
         const lengthSlider = document.getElementById("length-slider");
         const lengthValue = document.getElementById("length-value");
         const creativitySlider = document.getElementById("creativity-slider");
         const creativityValue = document.getElementById("creativity-value");
-        const contrastSlider = document.getElementById("contrast-slider");
-        const contrastValue = document.getElementById("contrast-value");
-        const colorOptions = document.querySelectorAll(".color-option");
 
-        // Conversation history
         let conversationHistory = [];
 
-        // Toast notification function
+        // Toast function with theme-consistent colors
         function showToast(message, type = "info") {
           const container = document.getElementById("toast-container");
           const toast = document.createElement("div");
-          toast.className = "toast";
-          if (type === "success") {
-            toast.style.background = "#5eff8f";
-          } else if (type === "error") {
-            toast.style.background = "#ff5e5e";
-          } else {
-            toast.style.background = "rgba(0,0,0,0.8)";
-          }
+          toast.className = `toast ${type}`;
           toast.textContent = message;
           container.appendChild(toast);
+
           setTimeout(() => {
             toast.style.opacity = 0;
             toast.style.transition = "opacity 0.5s";
@@ -1129,18 +1430,21 @@
           }, 3500);
         }
 
-        // Auto-show Help modal on first visit
+        // Display version
+        versionDisplay.textContent = "Version: " + VERSION;
+
+        // Show help modal first time
         if (!localStorage.getItem("visited")) {
           helpModal.classList.add("active");
         }
 
-        // Toggle Theme (Dark/Light)
+        // Theme toggle
         themeToggle.addEventListener("click", () => {
-          document.body.classList.toggle("light-theme");
-          showToast("Theme toggled", "success");
+          document.body.classList.toggle("light-mode");
+          showToast("Theme toggled", "info");
         });
 
-        // Toggle Help Modal
+        // Help modal
         helpToggle.addEventListener("click", () => {
           helpModal.classList.add("active");
         });
@@ -1149,11 +1453,10 @@
           localStorage.setItem("visited", "true");
         });
 
-        // Drag and drop file upload
+        // Drag & drop upload
         dropZone.addEventListener("click", () => {
           fileInput.click();
         });
-        fileInput.addEventListener("change", handleFileSelect);
         dropZone.addEventListener("dragover", (e) => {
           e.preventDefault();
           dropZone.classList.add("active");
@@ -1168,6 +1471,7 @@
             handleFiles(e.dataTransfer.files);
           }
         });
+        fileInput.addEventListener("change", handleFileSelect);
 
         function handleFileSelect(e) {
           if (e.target.files.length) {
@@ -1188,11 +1492,11 @@
           fileInfoContainer.style.display = "none";
           dropZone.style.display = "flex";
         });
-        // Header Upload Button
         uploadButton.addEventListener("click", () => {
           fileInput.click();
         });
-        // Analyze button simulation (for file analysis)
+
+        // Analyze
         analyzeButton.addEventListener("click", () => {
           analyzeButton.classList.add("analyzing");
           setTimeout(() => {
@@ -1202,18 +1506,21 @@
             showToast("Analysis complete", "success");
           }, 2000);
         });
-        // Toggle settings section
-        settingsToggle.addEventListener("click", () => {
-          settingsSection.classList.toggle("active-settings");
-        });
-        // Response modes selection
+
+        // Mode selection
         modeCards.forEach((card) => {
           card.addEventListener("click", () => {
             modeCards.forEach((c) => c.classList.remove("active"));
             card.classList.add("active");
           });
         });
-        // Update conversation history UI
+
+        // Toggle settings
+        toggleSettings.addEventListener("click", () => {
+          settingsPanel.classList.toggle("active");
+        });
+
+        // Update conversation - iMessage style bubbles
         function updateConversationHistory() {
           conversationHistoryDiv.innerHTML = "";
           conversationHistory.forEach((msg) => {
@@ -1224,14 +1531,29 @@
           });
           conversationHistoryDiv.scrollTop = conversationHistoryDiv.scrollHeight;
         }
-        // Send message using OpenAI API
+
+        // Clear chat functionality
+        clearChatButton.addEventListener("click", () => {
+          conversationHistory = [];
+          conversationHistoryDiv.innerHTML = "";
+          conversationHistoryDiv.classList.remove("active");
+          showToast("Chat cleared", "info");
+        });
+
+        // Send message
         async function sendMessage() {
           const userMessage = messageInput.value.trim();
           if (!userMessage) return;
+
+          // Show conversation history if this is the first message
+          if (!conversationHistory.length) {
+            conversationHistoryDiv.classList.add("active");
+          }
+
           conversationHistory.push({ role: "user", content: userMessage });
           updateConversationHistory();
           messageInput.value = "";
-          // Insert system prompt if starting new conversation
+
           const activeMode = document.querySelector(".mode-card.active").dataset.mode;
           if (conversationHistory.length === 1) {
             conversationHistory.unshift({
@@ -1239,16 +1561,16 @@
               content: "You are a helpful assistant with a " + activeMode + " tone.",
             });
           }
-          // Use the constant API_KEY defined above
-          const apiKey = API_KEY;
-          if (!apiKey) {
+          if (!API_KEY) {
             showToast("No API key available.", "error");
             return;
           }
-          // Map creativity slider to temperature
-          const creativity = parseInt(creativitySlider.value);
+          showToast("Sending message...", "info");
+
+          // Map slider to temperature
+          const creativityVal = parseInt(creativitySlider.value);
           let temperature;
-          switch (creativity) {
+          switch (creativityVal) {
             case 1: temperature = 0.2; break;
             case 2: temperature = 0.4; break;
             case 3: temperature = 0.7; break;
@@ -1256,18 +1578,18 @@
             case 5: temperature = 1.0; break;
             default: temperature = 0.7;
           }
-          showToast("Sending message...", "info");
+
           try {
             const response = await fetch("https://api.openai.com/v1/chat/completions", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                Authorization: "Bearer " + apiKey,
+                Authorization: "Bearer " + API_KEY,
               },
               body: JSON.stringify({
                 model: "gpt-4",
                 messages: conversationHistory,
-                temperature: temperature,
+                temperature
               }),
             });
             const data = await response.json();
@@ -1288,6 +1610,7 @@
             showToast("Error: " + error.message, "error");
           }
         }
+
         sendButton.addEventListener("click", sendMessage);
         messageInput.addEventListener("keydown", (e) => {
           if (e.key === "Enter" && !e.shiftKey) {
@@ -1295,7 +1618,8 @@
             sendMessage();
           }
         });
-        // Sliders functionality
+
+        // Slider label updates
         lengthSlider.addEventListener("input", () => {
           const value = lengthSlider.value;
           let text;
@@ -1308,6 +1632,7 @@
           }
           lengthValue.textContent = text;
         });
+
         creativitySlider.addEventListener("input", () => {
           const value = creativitySlider.value;
           let text;
@@ -1319,46 +1644,6 @@
             case "5": text = "Very High"; break;
           }
           creativityValue.textContent = text;
-        });
-        contrastSlider.addEventListener("input", () => {
-          const value = contrastSlider.value;
-          let text;
-          switch (value) {
-            case "1": text = "Very Low"; break;
-            case "2": text = "Low"; break;
-            case "3": text = "Medium"; break;
-            case "4": text = "High"; break;
-            case "5": text = "Very High"; break;
-          }
-          contrastValue.textContent = text;
-          const contrast = (value - 1) * 0.15;
-          document.documentElement.style.setProperty("--bg-primary", `rgba(18, 18, 18, ${1 - contrast})`);
-          document.documentElement.style.setProperty("--bg-secondary", `rgba(30, 30, 30, ${1 - contrast})`);
-          document.documentElement.style.setProperty("--bg-tertiary", `rgba(37, 37, 37, ${1 - contrast})`);
-        });
-        colorOptions.forEach((option) => {
-          option.addEventListener("click", () => {
-            colorOptions.forEach((o) => o.classList.remove("active"));
-            option.classList.add("active");
-            const color = option.dataset.color;
-            updateAccentColor(color);
-          });
-        });
-        function updateAccentColor(color) {
-          let primary, secondary;
-          switch (color) {
-            case "purple": primary = "#7d5fff"; secondary = "#5e72eb"; break;
-            case "blue": primary = "#5e8fff"; secondary = "#5e72eb"; break;
-            case "green": primary = "#5effce"; secondary = "#5eff8f"; break;
-            case "pink": primary = "#ff5ece"; secondary = "#ff5e8f"; break;
-            case "orange": primary = "#ffce5e"; secondary = "#ff8f5e"; break;
-          }
-          document.documentElement.style.setProperty("--accent-primary", primary);
-          document.documentElement.style.setProperty("--accent-secondary", secondary);
-        }
-        messageInput.addEventListener("input", function () {
-          this.style.height = "auto";
-          this.style.height = this.scrollHeight + "px";
         });
       });
     </script>
