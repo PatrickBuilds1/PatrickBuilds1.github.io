@@ -38,7 +38,6 @@
         --transition-slow: 0.4s ease;
         --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       }
-
       /* Default dark theme */
       body {
         --bg-primary: var(--bg-primary-dark);
@@ -47,7 +46,6 @@
         --text-primary: var(--text-primary-dark);
         --text-secondary: var(--text-secondary-dark);
       }
-
       /* Light theme class */
       .light-theme {
         --bg-primary: var(--bg-primary-light);
@@ -56,43 +54,22 @@
         --text-primary: var(--text-primary-light);
         --text-secondary: var(--text-secondary-light);
       }
-
       @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(10px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
       }
       @keyframes pulse {
-        0% {
-          transform: scale(1);
-        }
-        50% {
-          transform: scale(1.05);
-        }
-        100% {
-          transform: scale(1);
-        }
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
       }
       @keyframes shimmer {
-        0% {
-          background-position: -200% 0;
-        }
-        100% {
-          background-position: 200% 0;
-        }
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
       }
       @keyframes rotate {
-        from {
-          transform: rotate(0deg);
-        }
-        to {
-          transform: rotate(360deg);
-        }
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
       }
       * {
         margin: 0;
@@ -107,16 +84,8 @@
         display: flex;
         flex-direction: column;
         overflow-x: hidden;
-        background-image: radial-gradient(
-            circle at 10% 20%,
-            rgba(125, 95, 255, 0.05) 0%,
-            transparent 30%
-          ),
-          radial-gradient(
-            circle at 90% 80%,
-            rgba(94, 114, 235, 0.05) 0%,
-            transparent 30%
-          );
+        background-image: radial-gradient(circle at 10% 20%, rgba(125, 95, 255, 0.05) 0%, transparent 30%),
+          radial-gradient(circle at 90% 80%, rgba(94, 114, 235, 0.05) 0%, transparent 30%);
       }
       header {
         padding: 1.5rem;
@@ -714,7 +683,13 @@
       #settings-section #save-api-key {
         display: none;
       }
-      /* Settings section remains for other sliders and options */
+      /* Version display for iteration tracking in the Upload section */
+      #version-display {
+        text-align: center;
+        font-size: 0.9rem;
+        margin-top: 1rem;
+        color: var(--text-secondary);
+      }
       @media (max-width: 768px) {
         .section-header { padding: 1.25rem; }
         .section-content { padding: 1.25rem; }
@@ -813,6 +788,10 @@
               <span class="btn-text">Analyze Messages</span>
               <div class="spinner"></div>
             </button>
+          </div>
+          <!-- Version display -->
+          <div id="version-display" style="text-align: center; margin-top: 1rem; font-size: 0.9rem;">
+            Version:
           </div>
         </div>
       </section>
@@ -1053,8 +1032,7 @@
               <div class="color-option color-orange" data-color="orange"></div>
             </div>
 
-            <!-- API Key UI removed in favor of backend constant -->
-            <!-- Background image URL option remains -->
+            <!-- API key UI removed -->
             <h3 style="margin: 1.5rem 0 0.75rem 0; font-size: 1rem; color: var(--text-secondary);">
               Background Image URL
             </h3>
@@ -1084,8 +1062,10 @@
     </div>
 
     <script>
-      // Define API key as a constant (backend key, not editable in the UI)
-      const API_KEY = "sk-proj gbr8hqNPZVuQrBFMZO_5nnJin6NudXm_LrNIRnsgYtgwIdxjxiNRPzXYqLhmzjxQ9T9zcrm5lET3BlbkFJ6qOVPpeovMR0hwWmRf0ZCb8pRHTfJmbrPn1Mce6CGAD_Enddr--OYQoLpIuZRKb_h_2R3F_MMA";
+      // Define the API key as a constant (backend key, not editable in the UI)
+      const API_KEY = "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";
+      // Define the version number for this iteration
+      const VERSION = "1.0.0";
 
       document.addEventListener("DOMContentLoaded", function () {
         // DOM Elements
@@ -1109,6 +1089,10 @@
         const conversationHistoryDiv = document.getElementById("conversation-history");
         const setBgButton = document.getElementById("set-bg");
         const bgUrlInput = document.getElementById("bg-url-input");
+        const versionDisplay = document.getElementById("version-display");
+
+        // Set version display text
+        versionDisplay.textContent = "Version: " + VERSION;
 
         // Sliders
         const lengthSlider = document.getElementById("length-slider");
@@ -1255,7 +1239,7 @@
               content: "You are a helpful assistant with a " + activeMode + " tone.",
             });
           }
-          // Use the constant API_KEY defined at the top
+          // Use the constant API_KEY defined above
           const apiKey = API_KEY;
           if (!apiKey) {
             showToast("No API key available.", "error");
