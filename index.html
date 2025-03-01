@@ -69,6 +69,14 @@
         --btn-padding: 0.6rem 1rem;
         --btn-font-size: 0.85rem;
         --btn-font-weight: 600;
+
+        /* Enhanced card variables */
+        --card-bg: rgba(30, 30, 40, 0.5);
+        --card-border: rgba(255, 255, 255, 0.08);
+        --card-glow: rgba(125, 95, 255, 0.15);
+        --progress-thickness: 8px;
+        --progress-bg: rgba(255, 255, 255, 0.08);
+        --indicator-size: 100px;
       }
       
       .light-mode {
@@ -86,6 +94,11 @@
         --toast-success: #007aff;
         --toast-error: #FF3B30;
         --toast-info: rgba(50, 50, 50, 0.9);
+        /* Enhanced card variables - light theme */
+        --card-bg: rgba(255, 255, 255, 0.7);
+        --card-border: rgba(0, 0, 0, 0.08);
+        --card-glow: rgba(125, 95, 255, 0.12);
+        --progress-bg: rgba(0, 0, 0, 0.08);
       }
       
       * {
@@ -524,68 +537,176 @@
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         gap: 1.5rem;
+        perspective: 1000px;
       }
+      
+      /* Enhanced Result Cards Styling */
       .result-card {
-        background: var(--bg-tertiary);
-        border-radius: var(--radius-md);
-        padding: 1.5rem;
+        position: relative;
+        background: var(--card-bg);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: var(--radius-lg);
+        padding: 1.75rem;
         display: flex;
         flex-direction: column;
-        gap: 1rem;
-        transition: transform var(--transition-normal), box-shadow var(--transition-normal);
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        gap: 1.25rem;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        border: 1px solid var(--card-border);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 0 0 1px var(--card-border);
+        transform-style: preserve-3d;
+        overflow: hidden;
+        z-index: 1;
       }
-      .light-mode .result-card {
-        border: 1px solid rgba(0, 0, 0, 0.05);
+      
+      .result-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), var(--card-glow), transparent 50%);
+        opacity: 0;
+        transition: opacity 0.5s ease;
       }
+      
       .result-card:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
+        transform: translateY(-10px) rotateX(3deg) rotateY(3deg);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2), 0 0 0 1px var(--card-border);
       }
+      
+      .result-card:hover::before {
+        opacity: 1;
+      }
+      
       .result-header {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
+        gap: 1rem;
+        z-index: 2;
       }
+      
       .result-icon {
-        width: 36px;
-        height: 36px;
-        border-radius: var(--radius-sm);
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-md);
         display: flex;
         align-items: center;
         justify-content: center;
         fill: currentColor;
-      }
-      .result-title {
-        font-size: 1.1rem;
-        font-weight: 600;
-      }
-      .progress-bar {
-        width: 100%;
-        height: 6px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 3px;
-        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
         position: relative;
+        overflow: hidden;
       }
-      .light-mode .progress-bar {
-        background: rgba(0, 0, 0, 0.1);
+      
+      .result-icon::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at center, rgba(255,255,255,0.8) 0%, transparent 70%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
       }
-      .progress-fill {
+      
+      .result-card:hover .result-icon::after {
+        opacity: 0.2;
+        animation: pulse 2s infinite;
+      }
+      
+      .result-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -0.01em;
+      }
+      
+      /* Circular Progress Indicator */
+      .progress-container {
+        position: relative;
+        width: var(--indicator-size);
+        height: var(--indicator-size);
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      .progress-circle {
+        width: 100%;
         height: 100%;
-        border-radius: 3px;
-        transition: width var(--transition-slow);
+        fill: none;
+        stroke: var(--progress-bg);
+        stroke-width: var(--progress-thickness);
+        transform: rotate(-90deg);
+        transform-origin: center;
+        stroke-linecap: round;
       }
-      .result-value {
+      
+      .progress-circle-fill {
+        fill: none;
+        stroke-width: var(--progress-thickness);
+        stroke-linecap: round;
+        stroke-dasharray: 301.59; /* Circumference of a circle with r=48 (2πr) */
+        stroke-dashoffset: calc(301.59 - ((var(--progress, 0) / 100) * 301.59));
+        transition: stroke-dashoffset 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        filter: drop-shadow(0 0 6px var(--glow-color, rgba(125, 95, 255, 0.5)));
+      }
+      
+      .personality-circle {
+        stroke: var(--info);
+      }
+      
+      .pattern-circle {
+        stroke: var(--warning);
+      }
+      
+      .sentiment-circle {
+        stroke: var(--success);
+      }
+      
+      .emoji-circle {
+        stroke: var(--witty);
+      }
+      
+      .structure-circle {
+        stroke: var(--structure);
+      }
+      
+      .flow-circle {
+        stroke: var(--flow);
+      }
+      
+      .progress-value {
+        position: absolute;
         font-size: 2rem;
         font-weight: 700;
-        margin: 0.5rem 0;
+        line-height: 1;
+        color: var(--text-primary);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
       }
-      .result-description {
+      
+      .progress-label {
         font-size: 0.9rem;
+        font-weight: 500;
         color: var(--text-secondary);
-        line-height: 1.5;
+        margin-top: 0.25rem;
       }
+      
+      .result-description {
+        font-size: 0.95rem;
+        color: var(--text-secondary);
+        line-height: 1.6;
+        z-index: 2;
+        position: relative;
+      }
+      
+      /* Specific icon styling with gradients */
       .personality-icon {
         background: linear-gradient(135deg, var(--info), var(--neutral));
       }
@@ -604,6 +725,29 @@
       .flow-icon {
         background: linear-gradient(135deg, var(--flow), #3e97ff);
       }
+
+      /* Particle effects */
+      .card-particles-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        border-radius: var(--radius-lg);
+        pointer-events: none;
+        z-index: 1;
+      }
+      
+      .card-particle {
+        position: absolute;
+        background: rgba(255, 255, 255, 0.4);
+        border-radius: 50%;
+        pointer-events: none;
+        opacity: 0;
+        animation: floatParticle 3s infinite ease-in-out;
+      }
+      
       .response-modes {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -1062,17 +1206,65 @@
           width: 100%;
         }
       }
+      
+      /* New animations for enhanced cards */
       @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
       }
+      
       @keyframes shimmer {
         0% { background-position: -200% 0; }
         100% { background-position: 200% 0; }
       }
+      
       @keyframes rotate {
         from { transform: rotate(0deg); }
         to { transform: rotate(360deg); }
+      }
+      
+      @keyframes pulse {
+        0% { opacity: 0.2; }
+        50% { opacity: 0.5; }
+        100% { opacity: 0.2; }
+      }
+      
+      @keyframes floatParticle {
+        0% { 
+          transform: translateY(0) translateX(0);
+          opacity: 0;
+        }
+        25% {
+          opacity: 0.5;
+        }
+        75% {
+          opacity: 0.5;
+        }
+        100% { 
+          transform: translateY(-30px) translateX(10px); 
+          opacity: 0;
+        }
+      }
+      
+      @keyframes vibrate {
+        0% { transform: translate(0); }
+        20% { transform: translate(-2px, 2px); }
+        40% { transform: translate(-2px, -2px); }
+        60% { transform: translate(2px, 2px); }
+        80% { transform: translate(2px, -2px); }
+        100% { transform: translate(0); }
+      }
+      
+      @keyframes gradientWave {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+      
+      @keyframes grow {
+        0% { transform: scale(0.95); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(0.95); }
       }
     </style>
   </head>
@@ -1183,6 +1375,7 @@
             <div class="result-grid">
               <!-- Personality Card -->
               <div class="result-card">
+                <div class="card-particles-container"></div>
                 <div class="result-header">
                   <div class="result-icon personality-icon">
                     <svg class="icon" viewBox="0 0 24 24">
@@ -1194,10 +1387,18 @@
                   </div>
                   <h3 class="result-title">Personality</h3>
                 </div>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 78%; background: linear-gradient(to right, var(--info), var(--neutral));"></div>
+                <div class="progress-container">
+                  <svg class="progress-circle" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="48"></circle>
+                  </svg>
+                  <svg class="progress-circle" viewBox="0 0 100 100">
+                    <circle class="progress-circle-fill personality-circle" cx="50" cy="50" r="48" style="--progress: 78; --glow-color: rgba(94, 158, 255, 0.5);"></circle>
+                  </svg>
+                  <div class="progress-value">
+                    <span>Friendly</span>
+                    <div class="progress-label">78%</div>
+                  </div>
                 </div>
-                <div class="result-value">Friendly</div>
                 <p class="result-description">
                   Your messaging style appears warm and approachable. You use positive language, ask questions, and engage meaningfully in conversations.
                 </p>
@@ -1205,6 +1406,7 @@
               
               <!-- Response Pattern Card -->
               <div class="result-card">
+                <div class="card-particles-container"></div>
                 <div class="result-header">
                   <div class="result-icon pattern-icon">
                     <svg class="icon" viewBox="0 0 24 24">
@@ -1213,10 +1415,18 @@
                   </div>
                   <h3 class="result-title">Response Pattern</h3>
                 </div>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 65%; background: linear-gradient(to right, var(--warning), var(--danger));"></div>
+                <div class="progress-container">
+                  <svg class="progress-circle" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="48"></circle>
+                  </svg>
+                  <svg class="progress-circle" viewBox="0 0 100 100">
+                    <circle class="progress-circle-fill pattern-circle" cx="50" cy="50" r="48" style="--progress: 65; --glow-color: rgba(255, 206, 94, 0.5);"></circle>
+                  </svg>
+                  <div class="progress-value">
+                    <span>Quick</span>
+                    <div class="progress-label">65%</div>
+                  </div>
                 </div>
-                <div class="result-value">Quick</div>
                 <p class="result-description">
                   You typically respond within 15 minutes during active conversations. Your messages tend to be concise but thoughtful.
                 </p>
@@ -1224,6 +1434,7 @@
               
               <!-- Sentiment Card -->
               <div class="result-card">
+                <div class="card-particles-container"></div>
                 <div class="result-header">
                   <div class="result-icon sentiment-icon">
                     <svg class="icon" viewBox="0 0 24 24">
@@ -1235,10 +1446,18 @@
                   </div>
                   <h3 class="result-title">Sentiment</h3>
                 </div>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 82%; background: linear-gradient(to right, var(--success), var(--info));"></div>
+                <div class="progress-container">
+                  <svg class="progress-circle" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="48"></circle>
+                  </svg>
+                  <svg class="progress-circle" viewBox="0 0 100 100">
+                    <circle class="progress-circle-fill sentiment-circle" cx="50" cy="50" r="48" style="--progress: 82; --glow-color: rgba(94, 157, 255, 0.5);"></circle>
+                  </svg>
+                  <div class="progress-value">
+                    <span>Positive</span>
+                    <div class="progress-label">82%</div>
+                  </div>
                 </div>
-                <div class="result-value">Positive</div>
                 <p class="result-description">
                   Your messages convey a consistently positive tone. You frequently use encouraging words and supportive language.
                 </p>
@@ -1246,6 +1465,7 @@
               
               <!-- Emoji Usage Card -->
               <div class="result-card">
+                <div class="card-particles-container"></div>
                 <div class="result-header">
                   <div class="result-icon emoji-icon">
                     <svg class="icon" viewBox="0 0 24 24">
@@ -1257,541 +1477,667 @@
                   </div>
                   <h3 class="result-title">Emoji Usage</h3>
                 </div>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 45%; background: linear-gradient(to right, var(--witty), var(--charming));"></div>
+                <div class="progress-container">
+                  <svg class="progress-circle" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="48"></circle>
+                  </svg>
+                  <svg class="progress-circle" viewBox="0 0 100 100">
+                    <circle class="progress-circle-fill emoji-circle" cx="50" cy="50" r="48" style="--progress: 45; --glow-color: rgba(255, 94, 206, 0.5);"></circle>
+                  </svg>
+                  <div class="progress-value">
+                    <span>Moderate</span>
+                    <div class="progress-label">45%</div>
+                  </div>
                 </div>
-                <div class="result-value">Moderate</div>
                 <p class="result-description">
                   You use emojis selectively to emphasize points. Most commonly used: 😊, 👍, and 😂.
                 </p>
               </div>
               
-              <!-- Message Structure Card -->
-              <div class="result-card">
-                <div class="result-header">
-                  <div class="result-icon structure-icon">
-                    <svg class="icon" viewBox="0 0 24 24">
-                      <line x1="8" y1="6" x2="21" y2="6"></line>
-                      <line x1="8" y1="12" x2="21" y2="12"></line>
-                      <line x1="8" y1="18" x2="21" y2="18"></line>
-                      <line x1="3" y1="6" x2="3.01" y2="6"></line>
-                      <line x1="3" y1="12" x2="3.01" y2="12"></line>
-                      <line x1="3" y1="18" x2="3.01" y2="18"></line>
-                    </svg>
-                  </div>
-                  <h3 class="result-title">Message Structure</h3>
-                </div>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 70%; background: linear-gradient(to right, var(--structure), #ff6b2b);"></div>
-                </div>
-                <div class="result-value">Concise</div>
-                <p class="result-description">
-                  You tend to write in short, focused paragraphs. Your messages have a clear structure that makes your points easy to follow.
-                </p>
-              </div>
-              
-              <!-- Conversation Flow Card -->
-              <div class="result-card">
-                <div class="result-header">
-                  <div class="result-icon flow-icon">
-                    <svg class="icon" viewBox="0 0 24 24">
-                      <polyline points="17 1 21 5 17 9"></polyline>
-                      <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
-                      <polyline points="7 23 3 19 7 15"></polyline>
-                      <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
-                    </svg>
-                  </div>
-                  <h3 class="result-title">Conversation Flow</h3>
-                </div>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 85%; background: linear-gradient(to right, var(--flow), #3e97ff);"></div>
-                </div>
-                <div class="result-value">Connective</div>
-                <p class="result-description">
-                  You naturally guide conversations with smooth transitions between topics. You often build on previous messages rather than abruptly changing subjects.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-      
-        <section id="modes-section">
-          <div class="section-header">
-            <h2 class="section-title">Response Modes</h2>
-            <button class="btn" id="toggle-settings">Settings</button>
-          </div>
-          <div class="section-content">
-            <div class="settings-panel" id="settings-panel">
-              <h3>Response Settings</h3>
-              <div class="slider-container">
-                <div class="slider-label">
-                  <span class="slider-title">Response Length</span>
-                  <span class="slider-value" id="length-value">Medium</span>
-                </div>
-                <input type="range" min="1" max="5" value="3" class="slider" id="length-slider" />
-              </div>
-              <div class="slider-container">
-                <div class="slider-label">
-                  <span class="slider-title">Creativity Level</span>
-                  <span class="slider-value" id="creativity-value">Balanced</span>
-                </div>
-                <input type="range" min="1" max="5" value="3" class="slider" id="creativity-slider" />
-              </div>
-            </div>
-            
-            <div class="response-modes">
-              <div class="mode-card active" data-mode="personalized">
-                <div class="mode-header">
-                  <h3 class="mode-title">Personalized</h3>
-                  <div class="mode-icon personalized-icon">
-                    <svg class="icon" viewBox="0 0 24 24">
-                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                      <circle cx="9" cy="7" r="4"></circle>
-                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                    </svg>
-                  </div>
-                </div>
-                <p class="mode-description">
-                  Responses that match your exact texting style and personality.
-                </p>
-              </div>
-              
-              <div class="mode-card" data-mode="charming">
-                <div class="mode-header">
-                  <h3 class="mode-title">Charming</h3>
-                  <div class="mode-icon charming-icon">
-                    <svg class="icon" viewBox="0 0 24 24">
-                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                    </svg>
-                  </div>
-                </div>
-                <p class="mode-description">
-                  Warm, engaging responses with a friendly and approachable tone.
-                </p>
-              </div>
-              
-              <div class="mode-card" data-mode="neutral">
-                <div class="mode-header">
-                  <h3 class="mode-title">Neutral</h3>
-                  <div class="mode-icon neutral-icon">
-                    <svg class="icon" viewBox="0 0 24 24">
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <line x1="8" y1="12" x2="16" y2="12"></line>
-                    </svg>
-                  </div>
-                </div>
-                <p class="mode-description">
-                  Clear, straightforward responses without added flair or personality.
-                </p>
-              </div>
-              
-              <div class="mode-card" data-mode="witty">
-                <div class="mode-header">
-                  <h3 class="mode-title">Witty</h3>
-                  <div class="mode-icon witty-icon">
-                    <svg class="icon" viewBox="0 0 24 24">
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
-                      <line x1="9" y1="9" x2="9.01" y2="9"></line>
-                      <line x1="15" y1="9" x2="15.01" y2="9"></line>
-                    </svg>
-                  </div>
-                </div>
-                <p class="mode-description">
-                  Clever, humorous responses with a touch of playful personality.
-                </p>
-              </div>
-            </div>
-            
-            <div class="suggestion-buttons">
-              <button class="suggestion-button" id="suggestion-email">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                  <polyline points="22,6 12,13 2,6"></polyline>
-                </svg>
-                How would I respond to this email?
-              </button>
-              <button class="suggestion-button" id="suggestion-dinner">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
-                  <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
-                  <line x1="6" y1="1" x2="6" y2="4"></line>
-                  <line x1="10" y1="1" x2="10" y2="4"></line>
-                  <line x1="14" y1="1" x2="14" y2="4"></line>
-                </svg>
-                Write a message about dinner plans
-              </button>
-              <button class="suggestion-button" id="suggestion-professional">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-                </svg>
-                Draft a professional message for me
-              </button>
-            </div>
-            
-            <div class="chat-controls">
-              <div class="query-input">
-                <textarea class="message-input" id="message-input" placeholder="Type a message to get a response..."></textarea>
-                <button class="send-button btn btn-primary" id="send-button">
-                  <span>Send</span>
-                </button>
-              </div>
-              <button id="clear-chat" class="btn">Clear Chat</button>
-            </div>
-            
-            <div id="conversation-history"></div>
-          </div>
-        </section>
-      </div>
-    </main>
-    
-    <footer>
-      <div id="version-display"></div>
-      <div class="privacy-notice">
-        Your messages are processed locally and never shared with third parties. We respect your privacy.
-      </div>
-      <div class="creator">Site created by Patrick Hall.</div>
-    </footer>
-    
-    <div id="toast-container"></div>
-    
-    <!-- Help Modal -->
-    <div id="help-modal">
-      <div class="modal-content">
-        <h2>Welcome to Personalized Convo Bot!</h2>
-        <ul>
-          <li>• Upload your message file using the Analysis section.</li>
-          <li>• Your conversation history appears in the chat area.</li>
-          <li>• Type your message and hit Send to get a response that matches your style.</li>
-          <li>• Adjust response length and creativity in Settings.</li>
-          <li>• Use the Clear Chat button to reset your conversation.</li>
-        </ul>
-        <button class="close-btn" id="close-help">Close</button>
-      </div>
+<!-- Message Structure Card -->
+<div class="result-card">
+  <div class="card-particles-container"></div>
+  <div class="result-header">
+    <div class="result-icon structure-icon">
+      <svg class="icon" viewBox="0 0 24 24">
+        <line x1="8" y1="6" x2="21" y2="6"></line>
+        <line x1="8" y1="12" x2="21" y2="12"></line>
+        <line x1="8" y1="18" x2="21" y2="18"></line>
+        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+      </svg>
     </div>
-    
-    <!-- Inline JavaScript as a module -->
-    <script type="module">
-      const API_KEY = "xxxxx";
-      const VERSION = "1.0.12";
-      
-      document.addEventListener("DOMContentLoaded", function () {
-        const header = document.getElementById("site-header");
-        const dropZone = document.getElementById("drop-zone");
-        const fileInput = document.getElementById("file-input");
-        const fileInfoContainer = document.getElementById("file-info-container");
-        const fileName = document.getElementById("file-name");
-        const removeFile = document.getElementById("remove-file");
-        const analyzeButton = document.getElementById("analyze-button");
-        const sampleAnalysisButton = document.getElementById("sample-analysis-button");
-        const results = document.getElementById("results");
-        const themeToggle = document.getElementById("theme-toggle");
-        const helpToggle = document.getElementById("help-toggle");
-        const helpModal = document.getElementById("help-modal");
-        const closeHelp = document.getElementById("close-help");
-        const uploadButton = document.getElementById("upload-button");
-        const conversationHistoryDiv = document.getElementById("conversation-history");
-        const versionDisplay = document.getElementById("version-display");
-        const modeCards = document.querySelectorAll(".mode-card");
-        const messageInput = document.getElementById("message-input");
-        const sendButton = document.getElementById("send-button");
-        const settingsPanel = document.getElementById("settings-panel");
-        const toggleSettings = document.getElementById("toggle-settings");
-        const clearChatButton = document.getElementById("clear-chat");
-      
-        const suggestionEmail = document.getElementById("suggestion-email");
-        const suggestionDinner = document.getElementById("suggestion-dinner");
-        const suggestionProfessional = document.getElementById("suggestion-professional");
-      
-        const lengthSlider = document.getElementById("length-slider");
-        const lengthValue = document.getElementById("length-value");
-        const creativitySlider = document.getElementById("creativity-slider");
-        const creativityValue = document.getElementById("creativity-value");
-      
-        let conversationHistory = [];
-      
-        // Header scroll behavior
-        let lastScrollTop = 0;
-        window.addEventListener("scroll", function () {
-          let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
-          if (currentScroll > lastScrollTop && currentScroll > 60) {
-            header.classList.add("header-hidden");
-          } else {
-            header.classList.remove("header-hidden");
-          }
-          lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
-        }, false);
-      
-        function showToast(message, type = "info") {
-          const container = document.getElementById("toast-container");
-          const toast = document.createElement("div");
-          toast.className = `toast ${type}`;
-          toast.textContent = message;
-          container.appendChild(toast);
-          setTimeout(() => {
-            toast.style.opacity = 0;
-            toast.style.transition = "opacity 0.5s";
-          }, 3000);
-          setTimeout(() => {
-            container.removeChild(toast);
-          }, 3500);
-        }
-      
-        versionDisplay.textContent = "Version: " + VERSION;
-      
-        if (!localStorage.getItem("visited")) {
-          helpModal.classList.add("active");
-        }
-      
-        themeToggle.addEventListener("click", () => {
-          document.body.classList.toggle("light-mode");
-          showToast("Theme toggled", "info");
-        });
-      
-        helpToggle.addEventListener("click", () => {
-          helpModal.classList.add("active");
-        });
-        closeHelp.addEventListener("click", () => {
-          helpModal.classList.remove("active");
-          localStorage.setItem("visited", "true");
-        });
-      
-        dropZone.addEventListener("click", () => {
-          fileInput.click();
-        });
-        dropZone.addEventListener("dragover", (e) => {
-          e.preventDefault();
-          dropZone.classList.add("active");
-        });
-        dropZone.addEventListener("dragleave", () => {
-          dropZone.classList.remove("active");
-        });
-        dropZone.addEventListener("drop", (e) => {
-          e.preventDefault();
-          dropZone.classList.remove("active");
-          if (e.dataTransfer.files.length) {
-            handleFiles(e.dataTransfer.files);
-          }
-        });
-        fileInput.addEventListener("change", handleFileSelect);
-        function handleFileSelect(e) {
-          if (e.target.files.length) {
-            handleFiles(e.target.files);
-          }
-        }
-        function handleFiles(files) {
-          const file = files[0];
-          fileName.textContent = file.name;
-          fileInfoContainer.style.display = "flex";
-          fileInfoContainer.style.flexDirection = "column";
-          fileInfoContainer.style.alignItems = "center";
-          dropZone.style.display = "none";
-          showToast("File uploaded", "success");
-        }
-        removeFile.addEventListener("click", () => {
-          fileInput.value = "";
-          fileInfoContainer.style.display = "none";
-          dropZone.style.display = "flex";
-        });
-        uploadButton.addEventListener("click", () => {
-          fileInput.click();
-        });
-      
-        sampleAnalysisButton.addEventListener("click", () => {
-          showToast("Running sample analysis...", "info");
-          setTimeout(() => {
-            results.classList.add("active");
-            results.scrollIntoView({ behavior: "smooth" });
-            showToast("Sample analysis complete", "success");
-          }, 1500);
-        });
-      
-        analyzeButton.addEventListener("click", () => {
-          analyzeButton.classList.add("analyzing");
-          setTimeout(() => {
-            analyzeButton.classList.remove("analyzing");
-            results.classList.add("active");
-            results.scrollIntoView({ behavior: "smooth" });
-            showToast("Analysis complete", "success");
-          }, 2000);
-        });
-      
-        modeCards.forEach((card) => {
-          card.addEventListener("click", () => {
-            modeCards.forEach((c) => c.classList.remove("active"));
-            card.classList.add("active");
-          });
-        });
-      
-        toggleSettings.addEventListener("click", () => {
-          settingsPanel.classList.toggle("active");
-        });
-      
-        function updateConversationHistory() {
-          conversationHistoryDiv.innerHTML = "";
-          conversationHistory.forEach((msg) => {
-            const msgDiv = document.createElement("div");
-            msgDiv.className = "message " + (msg.role === "user" ? "user-message" : "bot-message");
-            msgDiv.textContent = msg.content;
-            conversationHistoryDiv.appendChild(msgDiv);
-          });
-          conversationHistoryDiv.scrollTop = conversationHistoryDiv.scrollHeight;
-        }
-      
-        clearChatButton.addEventListener("click", () => {
-          conversationHistory = [];
-          conversationHistoryDiv.innerHTML = "";
-          conversationHistoryDiv.classList.remove("active");
-          showToast("Chat cleared", "info");
-        });
-      
-        suggestionEmail.addEventListener("click", () => {
-          messageInput.value = "How would I respond to this email?";
-          sendMessage();
-        });
-        suggestionDinner.addEventListener("click", () => {
-          messageInput.value = "Write a message about dinner plans";
-          sendMessage();
-        });
-        suggestionProfessional.addEventListener("click", () => {
-          messageInput.value = "Draft a professional message for me";
-          sendMessage();
-        });
-      
-        async function sendMessage() {
-          const userMessage = messageInput.value.trim();
-          if (!userMessage) return;
-          if (!conversationHistory.length) {
-            conversationHistoryDiv.classList.add("active");
-          }
-          conversationHistory.push({ role: "user", content: userMessage });
-          updateConversationHistory();
-          messageInput.value = "";
-          const activeMode = document.querySelector(".mode-card.active").dataset.mode;
-          if (conversationHistory.length === 1) {
-            conversationHistory.unshift({
-              role: "system",
-              content: "You are a helpful assistant with a " + activeMode + " tone.",
-            });
-          }
-          if (!API_KEY) {
-            showToast("No API key available.", "error");
-            return;
-          }
-          showToast("Sending message...", "info");
-          const creativityVal = parseInt(creativitySlider.value);
-          let temperature;
-          switch (creativityVal) {
-            case 1:
-              temperature = 0.2;
-              break;
-            case 2:
-              temperature = 0.4;
-              break;
-            case 3:
-              temperature = 0.7;
-              break;
-            case 4:
-              temperature = 0.9;
-              break;
-            case 5:
-              temperature = 1.0;
-              break;
-            default:
-              temperature = 0.7;
-          }
-          try {
-            const response = await fetch("https://api.openai.com/v1/chat/completions", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: "Bearer " + API_KEY,
-              },
-              body: JSON.stringify({
-                model: "gpt-4",
-                messages: conversationHistory,
-                temperature,
-              }),
-            });
-            const data = await response.json();
-            if (response.ok) {
-              const botMessage = data.choices[0].message.content.trim();
-              conversationHistory.push({ role: "assistant", content: botMessage });
-              updateConversationHistory();
-              showToast("Response received", "success");
-            } else {
-              const errorMsg = data.error?.message || "Error communicating with API.";
-              conversationHistory.push({ role: "assistant", content: "Error: " + errorMsg });
-              updateConversationHistory();
-              showToast("Error: " + errorMsg, "error");
-            }
-          } catch (error) {
-            conversationHistory.push({ role: "assistant", content: "Error: " + error.message });
-            updateConversationHistory();
-            showToast("Error: " + error.message, "error");
-          }
-        }
-      
-        sendButton.addEventListener("click", sendMessage);
-        messageInput.addEventListener("keydown", (e) => {
-          if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-          }
-        });
-      
-        lengthSlider.addEventListener("input", () => {
-          const value = lengthSlider.value;
-          let text;
-          switch (value) {
-            case "1":
-              text = "Very Short";
-              break;
-            case "2":
-              text = "Short";
-              break;
-            case "3":
-              text = "Medium";
-              break;
-            case "4":
-              text = "Long";
-              break;
-            case "5":
-              text = "Very Long";
-              break;
-            default:
-              text = "Medium";
-          }
-          lengthValue.textContent = text;
-        });
-      
-        creativitySlider.addEventListener("input", () => {
-          const value = creativitySlider.value;
-          let text;
-          switch (value) {
-            case "1":
-              text = "Very Low";
-              break;
-            case "2":
-              text = "Low";
-              break;
-            case "3":
-              text = "Balanced";
-              break;
-            case "4":
-              text = "High";
-              break;
-            case "5":
-              text = "Very High";
-              break;
-            default:
-              text = "Balanced";
-          }
-          creativityValue.textContent = text;
-        });
-      });
-    </script>
-  </body>
+    <h3 class="result-title">Message Structure</h3>
+  </div>
+  <div class="progress-container">
+    <svg class="progress-circle" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="48"></circle>
+    </svg>
+    <svg class="progress-circle" viewBox="0 0 100 100">
+      <circle class="progress-circle-fill structure-circle" cx="50" cy="50" r="48" style="--progress: 70; --glow-color: rgba(255, 143, 94, 0.5);"></circle>
+    </svg>
+    <div class="progress-value">
+      <span>Concise</span>
+      <div class="progress-label">70%</div>
+    </div>
+  </div>
+  <p class="result-description">
+    You tend to write in short, focused paragraphs. Your messages have a clear structure that makes your points easy to follow.
+  </p>
+</div>
+
+<!-- Conversation Flow Card -->
+<div class="result-card">
+  <div class="card-particles-container"></div>
+  <div class="result-header">
+    <div class="result-icon flow-icon">
+      <svg class="icon" viewBox="0 0 24 24">
+        <polyline points="17 1 21 5 17 9"></polyline>
+        <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+        <polyline points="7 23 3 19 7 15"></polyline>
+        <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+      </svg>
+    </div>
+    <h3 class="result-title">Conversation Flow</h3>
+  </div>
+  <div class="progress-container">
+    <svg class="progress-circle" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="48"></circle>
+    </svg>
+    <svg class="progress-circle" viewBox="0 0 100 100">
+      <circle class="progress-circle-fill flow-circle" cx="50" cy="50" r="48" style="--progress: 85; --glow-color: rgba(66, 198, 255, 0.5);"></circle>
+    </svg>
+    <div class="progress-value">
+      <span>Connective</span>
+      <div class="progress-label">85%</div>
+    </div>
+  </div>
+  <p class="result-description">
+    You naturally guide conversations with smooth transitions between topics. You often build on previous messages rather than abruptly changing subjects.
+  </p>
+</div>
+</div>
+</div>
+</section>
+
+<section id="modes-section">
+<div class="section-header">
+<h2 class="section-title">Response Modes</h2>
+<button class="btn" id="toggle-settings">Settings</button>
+</div>
+<div class="section-content">
+<div class="settings-panel" id="settings-panel">
+<h3>Response Settings</h3>
+<div class="slider-container">
+  <div class="slider-label">
+    <span class="slider-title">Response Length</span>
+    <span class="slider-value" id="length-value">Medium</span>
+  </div>
+  <input type="range" min="1" max="5" value="3" class="slider" id="length-slider" />
+</div>
+<div class="slider-container">
+  <div class="slider-label">
+    <span class="slider-title">Creativity Level</span>
+    <span class="slider-value" id="creativity-value">Balanced</span>
+  </div>
+  <input type="range" min="1" max="5" value="3" class="slider" id="creativity-slider" />
+</div>
+</div>
+
+<div class="response-modes">
+<div class="mode-card active" data-mode="personalized">
+  <div class="mode-header">
+    <h3 class="mode-title">Personalized</h3>
+    <div class="mode-icon personalized-icon">
+      <svg class="icon" viewBox="0 0 24 24">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+        <circle cx="9" cy="7" r="4"></circle>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+      </svg>
+    </div>
+  </div>
+  <p class="mode-description">
+    Responses that match your exact texting style and personality.
+  </p>
+</div>
+
+<div class="mode-card" data-mode="charming">
+  <div class="mode-header">
+    <h3 class="mode-title">Charming</h3>
+    <div class="mode-icon charming-icon">
+      <svg class="icon" viewBox="0 0 24 24">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+      </svg>
+    </div>
+  </div>
+  <p class="mode-description">
+    Warm, engaging responses with a friendly and approachable tone.
+  </p>
+</div>
+
+<div class="mode-card" data-mode="neutral">
+  <div class="mode-header">
+    <h3 class="mode-title">Neutral</h3>
+    <div class="mode-icon neutral-icon">
+      <svg class="icon" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="8" y1="12" x2="16" y2="12"></line>
+      </svg>
+    </div>
+  </div>
+  <p class="mode-description">
+    Clear, straightforward responses without added flair or personality.
+  </p>
+</div>
+
+<div class="mode-card" data-mode="witty">
+  <div class="mode-header">
+    <h3 class="mode-title">Witty</h3>
+    <div class="mode-icon witty-icon">
+      <svg class="icon" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+        <line x1="9" y1="9" x2="9.01" y2="9"></line>
+        <line x1="15" y1="9" x2="15.01" y2="9"></line>
+      </svg>
+    </div>
+  </div>
+  <p class="mode-description">
+    Clever, humorous responses with a touch of playful personality.
+  </p>
+</div>
+</div>
+
+<div class="suggestion-buttons">
+<button class="suggestion-button" id="suggestion-email">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+    <polyline points="22,6 12,13 2,6"></polyline>
+  </svg>
+  How would I respond to this email?
+</button>
+<button class="suggestion-button" id="suggestion-dinner">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+    <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+    <line x1="6" y1="1" x2="6" y2="4"></line>
+    <line x1="10" y1="1" x2="10" y2="4"></line>
+    <line x1="14" y1="1" x2="14" y2="4"></line>
+  </svg>
+  Write a message about dinner plans
+</button>
+<button class="suggestion-button" id="suggestion-professional">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+  </svg>
+  Draft a professional message for me
+</button>
+</div>
+
+<div class="chat-controls">
+<div class="query-input">
+  <textarea class="message-input" id="message-input" placeholder="Type a message to get a response..."></textarea>
+  <button class="send-button btn btn-primary" id="send-button">
+    <span>Send</span>
+  </button>
+</div>
+<button id="clear-chat" class="btn">Clear Chat</button>
+</div>
+
+<div id="conversation-history"></div>
+</div>
+</section>
+</div>
+</main>
+
+<footer>
+<div id="version-display"></div>
+<div class="privacy-notice">
+Your messages are processed locally and never shared with third parties. We respect your privacy.
+</div>
+<div class="creator">Site created by Patrick Hall.</div>
+</footer>
+
+<div id="toast-container"></div>
+
+<!-- Help Modal -->
+<div id="help-modal">
+<div class="modal-content">
+<h2>Welcome to Personalized Convo Bot!</h2>
+<ul>
+<li>• Upload your message file using the Analysis section.</li>
+<li>• Your conversation history appears in the chat area.</li>
+<li>• Type your message and hit Send to get a response that matches your style.</li>
+<li>• Adjust response length and creativity in Settings.</li>
+<li>• Use the Clear Chat button to reset your conversation.</li>
+</ul>
+<button class="close-btn" id="close-help">Close</button>
+</div>
+</div>
+
+<!-- Inline JavaScript as a module -->
+<script type="module">
+const API_KEY = "xxxxx";
+const VERSION = "1.0.12";
+
+document.addEventListener("DOMContentLoaded", function () {
+const header = document.getElementById("site-header");
+const dropZone = document.getElementById("drop-zone");
+const fileInput = document.getElementById("file-input");
+const fileInfoContainer = document.getElementById("file-info-container");
+const fileName = document.getElementById("file-name");
+const removeFile = document.getElementById("remove-file");
+const analyzeButton = document.getElementById("analyze-button");
+const sampleAnalysisButton = document.getElementById("sample-analysis-button");
+const results = document.getElementById("results");
+const themeToggle = document.getElementById("theme-toggle");
+const helpToggle = document.getElementById("help-toggle");
+const helpModal = document.getElementById("help-modal");
+const closeHelp = document.getElementById("close-help");
+const uploadButton = document.getElementById("upload-button");
+const conversationHistoryDiv = document.getElementById("conversation-history");
+const versionDisplay = document.getElementById("version-display");
+const modeCards = document.querySelectorAll(".mode-card");
+const messageInput = document.getElementById("message-input");
+const sendButton = document.getElementById("send-button");
+const settingsPanel = document.getElementById("settings-panel");
+const toggleSettings = document.getElementById("toggle-settings");
+const clearChatButton = document.getElementById("clear-chat");
+const resultCards = document.querySelectorAll(".result-card");
+
+const suggestionEmail = document.getElementById("suggestion-email");
+const suggestionDinner = document.getElementById("suggestion-dinner");
+const suggestionProfessional = document.getElementById("suggestion-professional");
+
+const lengthSlider = document.getElementById("length-slider");
+const lengthValue = document.getElementById("length-value");
+const creativitySlider = document.getElementById("creativity-slider");
+const creativityValue = document.getElementById("creativity-value");
+
+let conversationHistory = [];
+
+// Enhanced result cards interactivity
+resultCards.forEach(card => {
+// Initialize particles in each card
+const particlesContainer = card.querySelector('.card-particles-container');
+if (particlesContainer) {
+for (let i = 0; i < 10; i++) {
+const particle = document.createElement('div');
+particle.className = 'card-particle';
+particle.style.width = Math.random() * 4 + 'px';
+particle.style.height = particle.style.width;
+particle.style.left = Math.random() * 100 + '%';
+particle.style.top = Math.random() * 100 + '%';
+particle.style.animationDelay = Math.random() * 3 + 's';
+particlesContainer.appendChild(particle);
+}
+}
+
+// Add interactive 3D effect
+card.addEventListener('mousemove', function(e) {
+const rect = card.getBoundingClientRect();
+const x = e.clientX - rect.left;
+const y = e.clientY - rect.top;
+
+// Calculate rotation values based on mouse position
+const centerX = rect.width / 2;
+const centerY = rect.height / 2;
+const rotateY = (x - centerX) / 20;
+const rotateX = (centerY - y) / 20;
+
+// Set CSS variables for gradient positions
+card.style.setProperty('--x', (x / rect.width) * 100 + '%');
+card.style.setProperty('--y', (y / rect.height) * 100 + '%');
+
+// Apply 3D transformation
+card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(10px)`;
+
+// Show particles
+const particles = card.querySelectorAll('.card-particle');
+particles.forEach(p => {
+p.style.opacity = '1';
+});
+});
+
+// Reset card on mouseout
+card.addEventListener('mouseleave', function() {
+card.style.transform = 'rotateX(0) rotateY(0) translateZ(0)';
+
+// Hide particles gradually
+const particles = card.querySelectorAll('.card-particle');
+particles.forEach(p => {
+p.style.opacity = '0';
+});
+});
+
+// Trigger slight animation on initial load
+setTimeout(() => {
+const progressCircle = card.querySelector('.progress-circle-fill');
+if (progressCircle) {
+const progress = progressCircle.style.getPropertyValue('--progress');
+progressCircle.style.setProperty('--progress', '0');
+setTimeout(() => {
+  progressCircle.style.setProperty('--progress', progress);
+}, 100);
+}
+}, 500);
+});
+
+// Header scroll behavior
+let lastScrollTop = 0;
+window.addEventListener("scroll", function () {
+let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+if (currentScroll > lastScrollTop && currentScroll > 60) {
+header.classList.add("header-hidden");
+} else {
+header.classList.remove("header-hidden");
+}
+lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
+}, false);
+
+function showToast(message, type = "info") {
+const container = document.getElementById("toast-container");
+const toast = document.createElement("div");
+toast.className = `toast ${type}`;
+toast.textContent = message;
+container.appendChild(toast);
+setTimeout(() => {
+toast.style.opacity = 0;
+toast.style.transition = "opacity 0.5s";
+}, 3000);
+setTimeout(() => {
+container.removeChild(toast);
+}, 3500);
+}
+
+versionDisplay.textContent = "Version: " + VERSION;
+
+if (!localStorage.getItem("visited")) {
+helpModal.classList.add("active");
+}
+
+themeToggle.addEventListener("click", () => {
+document.body.classList.toggle("light-mode");
+showToast("Theme toggled", "info");
+});
+
+helpToggle.addEventListener("click", () => {
+helpModal.classList.add("active");
+});
+closeHelp.addEventListener("click", () => {
+helpModal.classList.remove("active");
+localStorage.setItem("visited", "true");
+});
+
+dropZone.addEventListener("click", () => {
+fileInput.click();
+});
+dropZone.addEventListener("dragover", (e) => {
+e.preventDefault();
+dropZone.classList.add("active");
+});
+dropZone.addEventListener("dragleave", () => {
+dropZone.classList.remove("active");
+});
+dropZone.addEventListener("drop", (e) => {
+e.preventDefault();
+dropZone.classList.remove("active");
+if (e.dataTransfer.files.length) {
+handleFiles(e.dataTransfer.files);
+}
+});
+fileInput.addEventListener("change", handleFileSelect);
+function handleFileSelect(e) {
+if (e.target.files.length) {
+handleFiles(e.target.files);
+}
+}
+function handleFiles(files) {
+const file = files[0];
+fileName.textContent = file.name;
+fileInfoContainer.style.display = "flex";
+fileInfoContainer.style.flexDirection = "column";
+fileInfoContainer.style.alignItems = "center";
+dropZone.style.display = "none";
+showToast("File uploaded", "success");
+}
+removeFile.addEventListener("click", () => {
+fileInput.value = "";
+fileInfoContainer.style.display = "none";
+dropZone.style.display = "flex";
+});
+uploadButton.addEventListener("click", () => {
+fileInput.click();
+});
+
+sampleAnalysisButton.addEventListener("click", () => {
+showToast("Running sample analysis...", "info");
+setTimeout(() => {
+results.classList.add("active");
+results.scrollIntoView({ behavior: "smooth" });
+animateResultsEntry();
+showToast("Sample analysis complete", "success");
+}, 1500);
+});
+
+analyzeButton.addEventListener("click", () => {
+analyzeButton.classList.add("analyzing");
+setTimeout(() => {
+analyzeButton.classList.remove("analyzing");
+results.classList.add("active");
+results.scrollIntoView({ behavior: "smooth" });
+animateResultsEntry();
+showToast("Analysis complete", "success");
+}, 2000);
+});
+
+// Function to animate the results cards entry
+function animateResultsEntry() {
+const cards = document.querySelectorAll('.result-card');
+
+cards.forEach((card, index) => {
+card.style.opacity = '0';
+card.style.transform = 'translateY(30px)';
+card.style.transition = 'none';
+
+setTimeout(() => {
+card.style.transition = 'opacity 0.6s ease, transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
+card.style.opacity = '1';
+card.style.transform = 'translateY(0)';
+
+// Animate progress circles after cards appear
+setTimeout(() => {
+  const circle = card.querySelector('.progress-circle-fill');
+  if (circle) {
+    const progress = circle.style.getPropertyValue('--progress');
+    circle.style.setProperty('--progress', '0');
+    setTimeout(() => {
+      circle.style.setProperty('--progress', progress);
+    }, 100);
+  }
+}, 300);
+
+}, 100 + index * 100);
+});
+}
+
+modeCards.forEach((card) => {
+card.addEventListener("click", () => {
+modeCards.forEach((c) => c.classList.remove("active"));
+card.classList.add("active");
+});
+});
+
+toggleSettings.addEventListener("click", () => {
+settingsPanel.classList.toggle("active");
+});
+
+function updateConversationHistory() {
+conversationHistoryDiv.innerHTML = "";
+conversationHistory.forEach((msg) => {
+const msgDiv = document.createElement("div");
+msgDiv.className = "message " + (msg.role === "user" ? "user-message" : "bot-message");
+msgDiv.textContent = msg.content;
+conversationHistoryDiv.appendChild(msgDiv);
+});
+conversationHistoryDiv.scrollTop = conversationHistoryDiv.scrollHeight;
+}
+
+clearChatButton.addEventListener("click", () => {
+conversationHistory = [];
+conversationHistoryDiv.innerHTML = "";
+conversationHistoryDiv.classList.remove("active");
+showToast("Chat cleared", "info");
+});
+
+suggestionEmail.addEventListener("click", () => {
+messageInput.value = "How would I respond to this email?";
+sendMessage();
+});
+suggestionDinner.addEventListener("click", () => {
+messageInput.value = "Write a message about dinner plans";
+sendMessage();
+});
+suggestionProfessional.addEventListener("click", () => {
+messageInput.value = "Draft a professional message for me";
+sendMessage();
+});
+
+async function sendMessage() {
+const userMessage = messageInput.value.trim();
+if (!userMessage) return;
+if (!conversationHistory.length) {
+conversationHistoryDiv.classList.add("active");
+}
+conversationHistory.push({ role: "user", content: userMessage });
+updateConversationHistory();
+messageInput.value = "";
+const activeMode = document.querySelector(".mode-card.active").dataset.mode;
+if (conversationHistory.length === 1) {
+conversationHistory.unshift({
+role: "system",
+content: "You are a helpful assistant with a " + activeMode + " tone.",
+});
+}
+if (!API_KEY) {
+showToast("No API key available.", "error");
+return;
+}
+showToast("Sending message...", "info");
+const creativityVal = parseInt(creativitySlider.value);
+let temperature;
+switch (creativityVal) {
+case 1:
+temperature = 0.2;
+break;
+case 2:
+temperature = 0.4;
+break;
+case 3:
+temperature = 0.7;
+break;
+case 4:
+temperature = 0.9;
+break;
+case 5:
+temperature = 1.0;
+break;
+default:
+temperature = 0.7;
+}
+try {
+const response = await fetch("https://api.openai.com/v1/chat/completions", {
+method: "POST",
+headers: {
+  "Content-Type": "application/json",
+  Authorization: "Bearer " + API_KEY,
+},
+body: JSON.stringify({
+  model: "gpt-4",
+  messages: conversationHistory,
+  temperature,
+}),
+});
+const data = await response.json();
+if (response.ok) {
+const botMessage = data.choices[0].message.content.trim();
+conversationHistory.push({ role: "assistant", content: botMessage });
+updateConversationHistory();
+showToast("Response received", "success");
+} else {
+const errorMsg = data.error?.message || "Error communicating with API.";
+conversationHistory.push({ role: "assistant", content: "Error: " + errorMsg });
+updateConversationHistory();
+showToast("Error: " + errorMsg, "error");
+}
+} catch (error) {
+conversationHistory.push({ role: "assistant", content: "Error: " + error.message });
+updateConversationHistory();
+showToast("Error: " + error.message, "error");
+}
+}
+
+sendButton.addEventListener("click", sendMessage);
+messageInput.addEventListener("keydown", (e) => {
+if (e.key === "Enter" && !e.shiftKey) {
+e.preventDefault();
+sendMessage();
+}
+});
+
+lengthSlider.addEventListener("input", () => {
+const value = lengthSlider.value;
+let text;
+switch (value) {
+case "1":
+text = "Very Short";
+break;
+case "2":
+text = "Short";
+break;
+case "3":
+text = "Medium";
+break;
+case "4":
+text = "Long";
+break;
+case "5":
+text = "Very Long";
+break;
+default:
+text = "Medium";
+}
+lengthValue.textContent = text;
+});
+
+creativitySlider.addEventListener("input", () => {
+const value = creativitySlider.value;
+let text;
+switch (value) {
+case "1":
+text = "Very Low";
+break;
+case "2":
+text = "Low";
+break;
+case "3":
+text = "Balanced";
+break;
+case "4":
+text = "High";
+break;
+case "5":
+text = "Very High";
+break;
+default:
+text = "Balanced";
+}
+creativityValue.textContent = text;
+});
+});
+</script>
+</body>
 </html>
