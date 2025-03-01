@@ -4,13 +4,24 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Personalized Convo Bot - AI-Powered Messaging Assistant</title>
-    <!-- Three.js core library -->
-    <script src="lib/three.min.js"></script>
-<script src="lib/gsap.min.js"></script>
-<script src="lib/EffectComposer.js"></script>
-<script src="lib/RenderPass.js"></script>
-<script src="lib/UnrealBloomPass.js"></script>
-<script src="background-experience.js" defer></script>
+
+   <!-- Load Three.js first -->
+  <script src="lib/three.min.js"></script>
+  
+  <!-- GSAP -->
+  <script src="lib/gsap.min.js"></script>
+  
+  <!-- Postprocessing / Shaders in correct order -->
+  <script src="lib/CopyShader.js"></script>
+  <script src="lib/ShaderPass.js"></script>
+  <script src="lib/RenderPass.js"></script>
+  <script src="lib/EffectComposer.js"></script>
+  <script src="lib/LuminosityHighPassShader.js"></script>
+  <script src="lib/UnrealBloomPass.js"></script>
+  
+  <!-- Finally, your custom background experience script -->
+  <script src="background-experience.js" defer></script>
+
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
       
@@ -25,75 +36,65 @@
         --text-secondary: #cccccc;
         --text-tertiary: #888888;
         --danger: #ff5e5e;
-        --success: #5e9dff; /* Changed from lime green to blue-ish */
+        --success: #5e9dff;
         --warning: #ffce5e;
         --info: #5eceff;
         --neutral: #5e8fff;
         --witty: #ff5ece;
         --charming: #5effce;
         --personalized: #ce5eff;
-        --structure: #ff8f5e; /* New color for message structure */
-        --flow: #42c6ff; /* New color for conversation flow */
-        --toast-success: #5e9dff; /* Changed from lime green to blue-ish */
+        --structure: #ff8f5e;
+        --flow: #42c6ff;
+        --toast-success: #5e9dff;
         --toast-error: #ff5e5e;
         --toast-info: rgba(0, 0, 0, 0.8);
         --user-message-bg: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
         --bot-message-bg: #444444;
-
+      
         --radius-sm: 6px;
         --radius-md: 12px;
         --radius-lg: 18px;
-
+      
         --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
         --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
         --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
-
+      
         --transition-fast: 0.15s ease;
         --transition-normal: 0.3s ease;
         --transition-slow: 0.4s ease;
-
+      
         --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        
+      
         /* Standard button styles */
         --btn-padding: 0.6rem 1rem;
         --btn-font-size: 0.85rem;
         --btn-font-weight: 600;
       }
-
-      /* Light Theme Class */
+      
       .light-mode {
-        /* Light background colors */
         --bg-primary: #f9f9f9;
         --bg-secondary: #ffffff;
         --bg-tertiary: #f0f0f0;
-
-        /* Light text colors */
         --text-primary: #333333;
         --text-secondary: #555555;
         --text-tertiary: #808080;
-
-        /* Lighter shadows */
         --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
         --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
         --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
-        
-        /* Light mode message colors */
         --user-message-bg: #007aff;
         --bot-message-bg: #e5e5ea;
-        
-        /* Light mode toast colors - changed to be theme-consistent */
         --toast-success: #007aff;
         --toast-error: #FF3B30;
         --toast-info: rgba(50, 50, 50, 0.9);
       }
-
+      
       * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
         font-family: var(--font-primary);
       }
-
+      
       body {
         background: var(--bg-primary);
         color: var(--text-primary);
@@ -102,7 +103,17 @@
         flex-direction: column;
         overflow-x: hidden;
       }
-
+      
+      /* Canvas for background experience */
+      #background-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: -1;
+        width: 100%;
+        height: 100%;
+      }
+      
       header {
         padding: 1.5rem;
         display: flex;
@@ -121,24 +132,20 @@
         background-color: rgba(245, 245, 245, 0.9);
         border-bottom: 1px solid #cccccc;
       }
-      
-      /* Header hide on scroll down, show on scroll up */
       header.header-hidden {
         transform: translateY(-100%);
       }
-
+      
       .logo {
         display: flex;
         flex-direction: column;
         align-items: flex-start;
       }
-
       .logo-main {
         display: flex;
         align-items: center;
         gap: 0.75rem;
       }
-
       .logo-icon {
         width: 32px;
         height: 32px;
@@ -149,7 +156,6 @@
         justify-content: center;
         box-shadow: var(--shadow-sm);
       }
-      
       .logo-text a {
         font-weight: 700;
         font-size: 1.4rem;
@@ -159,11 +165,9 @@
         -webkit-text-fill-color: transparent;
         text-decoration: none;
       }
-      
       .logo-text a:hover {
         opacity: 0.8;
       }
-      
       .tagline {
         font-size: 0.85rem;
         color: var(--text-secondary);
@@ -171,14 +175,11 @@
         margin-top: 0.2rem;
         font-style: italic;
       }
-
       .header-actions {
         display: flex;
         gap: 1rem;
         align-items: center;
       }
-      
-      /* Standardized button styles */
       .btn {
         background: var(--bg-tertiary);
         color: var(--text-secondary);
@@ -201,7 +202,6 @@
       .light-mode .btn:hover {
         background: #ddd;
       }
-      
       .btn-primary {
         background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
         color: var(--text-primary);
@@ -214,7 +214,6 @@
       .btn-primary:hover {
         opacity: 0.9;
       }
-      
       .header-actions button {
         background: var(--bg-tertiary);
         color: var(--text-secondary);
@@ -237,7 +236,6 @@
       .light-mode .header-actions button:hover {
         background: #ddd;
       }
-
       #theme-toggle::before {
         content: "Theme";
       }
@@ -257,7 +255,6 @@
         color: #ffffff;
         border: none;
       }
-
       main {
         flex: 1;
         display: flex;
@@ -267,7 +264,6 @@
         margin: 0 auto;
         width: 100%;
       }
-
       section {
         border-radius: var(--radius-lg);
         background: var(--bg-secondary);
@@ -280,8 +276,6 @@
         transform: translateY(-2px);
         box-shadow: var(--shadow-lg);
       }
-
-      /* Enhanced section header with gradient background */
       .section-header {
         padding: 1.5rem;
         border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -294,22 +288,17 @@
         border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         background: linear-gradient(90deg, rgba(0, 122, 255, 0.1), rgba(94, 114, 235, 0.05));
       }
-      
-      /* Enhanced section title */
       .section-title {
         font-size: 1.4rem;
         font-weight: 700;
         letter-spacing: -0.5px;
         position: relative;
       }
-      
-      /* Special styling for "Me" in "Message" */
       .section-title .highlight {
         position: relative;
         color: var(--accent-primary);
         font-weight: 800;
       }
-      
       .section-title .highlight::after {
         content: '';
         position: absolute;
@@ -321,7 +310,6 @@
         border-radius: 3px;
         opacity: 0.3;
       }
-      
       .section-title::after {
         content: '';
         position: absolute;
@@ -332,12 +320,9 @@
         background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
         border-radius: 3px;
       }
-      
       .section-content {
         padding: 1.5rem;
       }
-
-      /* Enhanced intro text */
       .intro-text {
         margin-bottom: 1.5rem;
         font-size: 1rem;
@@ -348,13 +333,10 @@
         border-radius: var(--radius-md);
         border-left: 4px solid var(--accent-primary);
       }
-      
       .intro-text strong {
         color: var(--text-primary);
         font-weight: 600;
       }
-
-      /* Export instructions with improved formatting */
       .export-instructions {
         margin: 1.5rem 0;
         padding: 1rem;
@@ -362,19 +344,16 @@
         border-radius: var(--radius-md);
         border-left: 4px solid var(--accent-primary);
       }
-      
       .export-instructions h3 {
         color: var(--text-primary);
         margin-bottom: 0.5rem;
         font-size: 1rem;
       }
-      
       .export-instructions p {
         font-size: 0.9rem;
         color: var(--text-secondary);
         line-height: 1.5;
       }
-
       .drag-area {
         border: 2px dashed rgba(255, 255, 255, 0.1);
         border-radius: var(--radius-md);
@@ -416,15 +395,12 @@
         font-size: 0.9rem;
         color: var(--text-tertiary);
       }
-
-      /* Sample Analysis Button */
       .sample-analysis-container {
         display: flex;
         justify-content: center;
         margin-top: 1.5rem;
         margin-bottom: 0.5rem;
       }
-
       .sample-analysis-button {
         background: var(--accent-primary);
         color: white;
@@ -440,18 +416,15 @@
         gap: 0.5rem;
         box-shadow: var(--shadow-sm);
       }
-
       .sample-analysis-button:hover {
         background: var(--accent-secondary);
         transform: translateY(-2px);
         box-shadow: var(--shadow-md);
       }
-
       .sample-analysis-button svg {
         width: 20px;
         height: 20px;
       }
-
       .or-divider {
         display: flex;
         align-items: center;
@@ -459,7 +432,6 @@
         color: var(--text-tertiary);
         font-size: 0.9rem;
       }
-
       .or-divider::before,
       .or-divider::after {
         content: "";
@@ -468,12 +440,10 @@
         background: rgba(255, 255, 255, 0.1);
         margin: 0 1rem;
       }
-
       .light-mode .or-divider::before,
       .light-mode .or-divider::after {
         background: rgba(0, 0, 0, 0.1);
       }
-
       .file-info {
         margin-top: 1rem;
         display: flex;
@@ -507,7 +477,6 @@
       .file-remove:hover {
         transform: scale(1.1);
       }
-
       .analyze-button {
         margin-top: 1.5rem;
         width: 100%;
@@ -523,7 +492,7 @@
         cursor: pointer;
       }
       .light-mode .analyze-button {
-        background: #007aff; /* iOS-style button color in light mode */
+        background: #007aff;
         color: #fff;
       }
       .analyze-button .spinner {
@@ -543,22 +512,19 @@
       .analyzing .btn-text {
         opacity: 0.7;
       }
-
       .results {
         display: none;
         flex-direction: column;
-        gap: 1rem; /* Reduced gap to close spacing */
+        gap: 1rem;
       }
       .results.active {
         display: flex;
       }
-
       .result-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         gap: 1.5rem;
       }
-
       .result-card {
         background: var(--bg-tertiary);
         border-radius: var(--radius-md);
@@ -620,7 +586,6 @@
         color: var(--text-secondary);
         line-height: 1.5;
       }
-
       .personality-icon {
         background: linear-gradient(135deg, var(--info), var(--neutral));
       }
@@ -639,14 +604,12 @@
       .flow-icon {
         background: linear-gradient(135deg, var(--flow), #3e97ff);
       }
-
       .response-modes {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 1rem;
-        margin-bottom: 2rem; /* Added spacing between mode cards and suggestion buttons */
+        margin-bottom: 2rem;
       }
-      
       .mode-card {
         background: var(--bg-tertiary);
         border-radius: var(--radius-md);
@@ -718,15 +681,12 @@
       .witty-icon {
         background: linear-gradient(135deg, var(--witty), #cc46ab);
       }
-
-      /* Suggestion buttons */
       .suggestion-buttons {
         display: flex;
         flex-wrap: wrap;
         gap: 0.75rem;
-        margin-bottom: 1.5rem; /* Increased spacing between suggestion buttons and chat controls */
+        margin-bottom: 1.5rem;
       }
-
       .suggestion-button {
         background: var(--bg-tertiary);
         color: var(--text-secondary);
@@ -744,30 +704,24 @@
         align-items: center;
         gap: 0.5rem;
       }
-
       .suggestion-button:hover {
         background: rgba(125, 95, 255, 0.1);
         border-color: var(--accent-primary);
       }
-
       .suggestion-button svg {
         width: 18px;
         height: 18px;
         color: var(--accent-primary);
         flex-shrink: 0;
       }
-
       .light-mode .suggestion-button {
         background: #f5f5f5;
         border-color: #e0e0e0;
       }
-
       .light-mode .suggestion-button:hover {
         background: rgba(0, 122, 255, 0.05);
         border-color: #007aff;
       }
-
-      /* Chat controls container - for input and buttons */
       .chat-controls {
         display: flex;
         align-items: center;
@@ -775,8 +729,6 @@
         gap: 0.75rem;
         margin-top: 1rem;
       }
-      
-      /* Clear chat button styling */
       #clear-chat {
         background: var(--bg-tertiary);
         color: var(--text-secondary);
@@ -788,23 +740,18 @@
         cursor: pointer;
         transition: all var(--transition-normal);
       }
-      
       #clear-chat:hover {
         background: rgba(255, 94, 94, 0.15);
         color: var(--danger);
       }
-      
       .light-mode #clear-chat {
         background: #eeeeee;
         border: 1px solid #cccccc;
       }
-      
       .light-mode #clear-chat:hover {
         background: rgba(255, 59, 48, 0.1);
         color: #FF3B30;
       }
-
-      /* Chat input area with gap between input and button */
       .query-input {
         display: flex;
         align-items: center;
@@ -813,7 +760,7 @@
         border-radius: var(--radius-md);
         box-shadow: var(--shadow-sm);
         margin-top: 1rem;
-        gap: 0.75rem; /* Added gap between input and button */
+        gap: 0.75rem;
         flex: 1;
       }
       .message-input {
@@ -858,8 +805,6 @@
       .send-button span {
         font-size: 0.9rem;
       }
-
-      /* Chat bubbles styled like iMessage */
       #conversation-history {
         margin-top: 1rem;
         padding: 1rem;
@@ -869,7 +814,7 @@
         overflow-y: auto;
         display: flex;
         flex-direction: column;
-        display: none; /* Hidden by default until first message */
+        display: none;
       }
       #conversation-history.active {
         display: flex;
@@ -885,20 +830,18 @@
       .user-message {
         background: var(--user-message-bg);
         color: #fff;
-        align-self: flex-end; /* Position on right */
-        border-bottom-right-radius: 4px; /* iMessage style */
+        align-self: flex-end;
+        border-bottom-right-radius: 4px;
       }
       .bot-message {
         background: var(--bot-message-bg);
-        align-self: flex-start; /* Position on left */
+        align-self: flex-start;
         color: var(--text-primary);
-        border-bottom-left-radius: 4px; /* iMessage style */
+        border-bottom-left-radius: 4px;
       }
       .light-mode .bot-message {
         color: #333333;
       }
-
-      /* Settings Panel with consistent margin */
       .settings-panel {
         display: none;
         background: var(--bg-tertiary);
@@ -970,8 +913,6 @@
         transform: scale(1.1);
         box-shadow: 0 0 10px rgba(125, 95, 255, 0.4);
       }
-
-      /* Toast notifications with theme-consistent colors */
       #toast-container {
         position: fixed;
         bottom: 20px;
@@ -986,22 +927,18 @@
         animation: fadeIn 0.5s forwards;
         color: var(--text-primary);
       }
-      
       .toast.success {
         background: var(--toast-success);
         color: #fff;
       }
-      
       .toast.error {
         background: var(--toast-error);
         color: #fff;
       }
-      
       .toast.info {
         background: var(--toast-info);
         color: #fff;
       }
-
       footer {
         text-align: center;
         padding: 1.5rem;
@@ -1010,11 +947,9 @@
         border-top: 1px solid rgba(255, 255, 255, 0.05);
         margin-top: 2rem;
       }
-      
       .light-mode footer {
         border-top: 1px solid rgba(0, 0, 0, 0.05);
       }
-      
       .privacy-notice {
         margin-top: 0.5rem;
         font-size: 0.75rem;
@@ -1023,14 +958,11 @@
         max-width: 600px;
         margin: 0.5rem auto 0 auto;
       }
-      
       .creator {
         font-size: 0.75rem;
         color: var(--text-tertiary);
         margin-top: 0.5rem;
       }
-
-      /* Help Modal styled to match the screenshot */
       #help-modal {
         position: fixed;
         top: 0;
@@ -1058,26 +990,22 @@
         box-shadow: var(--shadow-lg);
         text-align: center;
       }
-      
       #help-modal h2 {
         font-size: 2rem;
         font-weight: 700;
         margin-bottom: 2rem;
       }
-      
       #help-modal ul {
         list-style: none;
         text-align: center;
         margin-bottom: 2rem;
       }
-      
       #help-modal li {
         margin-bottom: 1rem;
         font-size: 1.1rem;
         line-height: 1.5;
         color: var(--text-secondary);
       }
-      
       #help-modal .close-btn {
         display: inline-block;
         padding: 0.8rem 2.5rem;
@@ -1090,64 +1018,50 @@
         cursor: pointer;
         transition: all 0.2s ease;
       }
-      
       #help-modal .close-btn:hover {
         opacity: 0.9;
       }
-
-      /* Media Queries for Responsive Layout */
       @media (max-width: 768px) {
         header {
           flex-direction: column;
           gap: 1rem;
         }
-        
         .header-actions {
           width: 100%;
           justify-content: space-between;
         }
-        
         .tagline {
           margin-left: 0;
           text-align: center;
           margin-top: 0.5rem;
         }
-        
         .query-input {
           flex-direction: column;
           gap: 0.75rem;
         }
-        
         .message-input {
           width: 100%;
         }
-        
         .send-button {
           width: 100%;
         }
-        
         .chat-controls {
           flex-direction: column;
         }
-        
         #clear-chat {
           width: 100%;
         }
-        
         #help-modal .modal-content {
           padding: 1.5rem;
           width: 95%;
         }
-        
         .suggestion-buttons {
           flex-direction: column;
         }
-        
         .suggestion-button {
           width: 100%;
         }
       }
-
       @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
@@ -1163,7 +1077,9 @@
     </style>
   </head>
   <body>
-    <canvas id="background-canvas" style="position: fixed; top: 0; left: 0; z-index: -1; width: 100%; height: 100%;"></canvas>
+    <!-- Canvas for background experience -->
+    <canvas id="background-canvas"></canvas>
+    
     <header id="site-header">
       <div class="logo">
         <div class="logo-main">
@@ -1192,7 +1108,7 @@
         <button id="upload-button" class="btn btn-primary"></button>
       </div>
     </header>
-
+    
     <main>
       <section id="upload-section">
         <div class="section-header">
@@ -1206,8 +1122,7 @@
             during busy periods, or simply curious about your communication style, our tool gives you insights while 
             preserving your authentic voice.
           </p>
-
-          <!-- Improved export instructions with better formatting -->
+          
           <div class="export-instructions">
             <h3>How to Export iMessage Data:</h3>
             <p>
@@ -1215,7 +1130,7 @@
               Upload that file here for analysis.
             </p>
           </div>
-
+          
           <div class="drag-area" id="drop-zone">
             <svg class="drag-icon" viewBox="0 0 24 24">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -1227,7 +1142,6 @@
             <input type="file" id="file-input" style="display: none;" />
           </div>
           
-          <!-- Sample Analysis Button -->
           <div class="or-divider">OR</div>
           <div class="sample-analysis-container">
             <button id="sample-analysis-button" class="sample-analysis-button">
@@ -1239,7 +1153,7 @@
               Try Sample Analysis
             </button>
           </div>
-
+          
           <div id="file-info-container" style="display: none;">
             <div class="file-info">
               <svg class="file-icon" viewBox="0 0 24 24">
@@ -1259,7 +1173,7 @@
           </div>
         </div>
       </section>
-
+      
       <div class="results" id="results">
         <section id="analysis-section">
           <div class="section-header">
@@ -1288,7 +1202,7 @@
                   Your messaging style appears warm and approachable. You use positive language, ask questions, and engage meaningfully in conversations.
                 </p>
               </div>
-
+              
               <!-- Response Pattern Card -->
               <div class="result-card">
                 <div class="result-header">
@@ -1307,7 +1221,7 @@
                   You typically respond within 15 minutes during active conversations. Your messages tend to be concise but thoughtful.
                 </p>
               </div>
-
+              
               <!-- Sentiment Card -->
               <div class="result-card">
                 <div class="result-header">
@@ -1329,7 +1243,7 @@
                   Your messages convey a consistently positive tone. You frequently use encouraging words and supportive language.
                 </p>
               </div>
-
+              
               <!-- Emoji Usage Card -->
               <div class="result-card">
                 <div class="result-header">
@@ -1352,7 +1266,7 @@
                 </p>
               </div>
               
-              <!-- Message Structure Card - NEW -->
+              <!-- Message Structure Card -->
               <div class="result-card">
                 <div class="result-header">
                   <div class="result-icon structure-icon">
@@ -1376,7 +1290,7 @@
                 </p>
               </div>
               
-              <!-- Conversation Flow Card - NEW -->
+              <!-- Conversation Flow Card -->
               <div class="result-card">
                 <div class="result-header">
                   <div class="result-icon flow-icon">
@@ -1400,14 +1314,11 @@
             </div>
           </div>
         </section>
-
-        <!-- Modes section with consistent styling -->
+      
         <section id="modes-section">
           <div class="section-header">
             <h2 class="section-title">Response Modes</h2>
-            <button class="btn" id="toggle-settings">
-              Settings
-            </button>
+            <button class="btn" id="toggle-settings">Settings</button>
           </div>
           <div class="section-content">
             <div class="settings-panel" id="settings-panel">
@@ -1427,7 +1338,7 @@
                 <input type="range" min="1" max="5" value="3" class="slider" id="creativity-slider" />
               </div>
             </div>
-
+            
             <div class="response-modes">
               <div class="mode-card active" data-mode="personalized">
                 <div class="mode-header">
@@ -1445,15 +1356,13 @@
                   Responses that match your exact texting style and personality.
                 </p>
               </div>
-
+              
               <div class="mode-card" data-mode="charming">
                 <div class="mode-header">
                   <h3 class="mode-title">Charming</h3>
                   <div class="mode-icon charming-icon">
                     <svg class="icon" viewBox="0 0 24 24">
-                      <path
-                        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
-                      ></path>
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                     </svg>
                   </div>
                 </div>
@@ -1461,7 +1370,7 @@
                   Warm, engaging responses with a friendly and approachable tone.
                 </p>
               </div>
-
+              
               <div class="mode-card" data-mode="neutral">
                 <div class="mode-header">
                   <h3 class="mode-title">Neutral</h3>
@@ -1476,7 +1385,7 @@
                   Clear, straightforward responses without added flair or personality.
                 </p>
               </div>
-
+              
               <div class="mode-card" data-mode="witty">
                 <div class="mode-header">
                   <h3 class="mode-title">Witty</h3>
@@ -1495,7 +1404,6 @@
               </div>
             </div>
             
-            <!-- Suggestion Buttons -->
             <div class="suggestion-buttons">
               <button class="suggestion-button" id="suggestion-email">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1522,27 +1430,23 @@
                 Draft a professional message for me
               </button>
             </div>
-
+            
             <div class="chat-controls">
               <div class="query-input">
-                <textarea
-                  class="message-input"
-                  id="message-input"
-                  placeholder="Type a message to get a response..."
-                ></textarea>
+                <textarea class="message-input" id="message-input" placeholder="Type a message to get a response..."></textarea>
                 <button class="send-button btn btn-primary" id="send-button">
                   <span>Send</span>
                 </button>
               </div>
               <button id="clear-chat" class="btn">Clear Chat</button>
             </div>
-
+            
             <div id="conversation-history"></div>
           </div>
         </section>
       </div>
     </main>
-
+    
     <footer>
       <div id="version-display"></div>
       <div class="privacy-notice">
@@ -1550,10 +1454,10 @@
       </div>
       <div class="creator">Site created by Patrick Hall.</div>
     </footer>
-
+    
     <div id="toast-container"></div>
-
-    <!-- Help Modal - Modified to match the screenshot -->
+    
+    <!-- Help Modal -->
     <div id="help-modal">
       <div class="modal-content">
         <h2>Welcome to Personalized Convo Bot!</h2>
@@ -1567,11 +1471,12 @@
         <button class="close-btn" id="close-help">Close</button>
       </div>
     </div>
-
-    <script>
-      const API_KEY = "xxxxx"
+    
+    <!-- Inline JavaScript as a module -->
+    <script type="module">
+      const API_KEY = "xxxxx";
       const VERSION = "1.0.12";
-
+      
       document.addEventListener("DOMContentLoaded", function () {
         const header = document.getElementById("site-header");
         const dropZone = document.getElementById("drop-zone");
@@ -1595,45 +1500,36 @@
         const settingsPanel = document.getElementById("settings-panel");
         const toggleSettings = document.getElementById("toggle-settings");
         const clearChatButton = document.getElementById("clear-chat");
-
-        // Suggestion buttons
+      
         const suggestionEmail = document.getElementById("suggestion-email");
         const suggestionDinner = document.getElementById("suggestion-dinner");
         const suggestionProfessional = document.getElementById("suggestion-professional");
-
-        // Sliders for length & creativity
+      
         const lengthSlider = document.getElementById("length-slider");
         const lengthValue = document.getElementById("length-value");
         const creativitySlider = document.getElementById("creativity-slider");
         const creativityValue = document.getElementById("creativity-value");
-
+      
         let conversationHistory = [];
-        
-        // Header scroll behavior variables
+      
+        // Header scroll behavior
         let lastScrollTop = 0;
-        
-        // Add scroll event listener for header show/hide behavior
-        window.addEventListener("scroll", function() {
+        window.addEventListener("scroll", function () {
           let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
-          
           if (currentScroll > lastScrollTop && currentScroll > 60) {
-            // Scrolling down
             header.classList.add("header-hidden");
           } else {
-            // Scrolling up
             header.classList.remove("header-hidden");
           }
           lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
         }, false);
-
-        // Toast function with theme-consistent colors
+      
         function showToast(message, type = "info") {
           const container = document.getElementById("toast-container");
           const toast = document.createElement("div");
           toast.className = `toast ${type}`;
           toast.textContent = message;
           container.appendChild(toast);
-
           setTimeout(() => {
             toast.style.opacity = 0;
             toast.style.transition = "opacity 0.5s";
@@ -1642,22 +1538,18 @@
             container.removeChild(toast);
           }, 3500);
         }
-
-        // Display version
+      
         versionDisplay.textContent = "Version: " + VERSION;
-
-        // Show help modal first time
+      
         if (!localStorage.getItem("visited")) {
           helpModal.classList.add("active");
         }
-
-        // Theme toggle
+      
         themeToggle.addEventListener("click", () => {
           document.body.classList.toggle("light-mode");
           showToast("Theme toggled", "info");
         });
-
-        // Help modal
+      
         helpToggle.addEventListener("click", () => {
           helpModal.classList.add("active");
         });
@@ -1665,8 +1557,7 @@
           helpModal.classList.remove("active");
           localStorage.setItem("visited", "true");
         });
-
-        // Drag & drop upload
+      
         dropZone.addEventListener("click", () => {
           fileInput.click();
         });
@@ -1685,7 +1576,6 @@
           }
         });
         fileInput.addEventListener("change", handleFileSelect);
-
         function handleFileSelect(e) {
           if (e.target.files.length) {
             handleFiles(e.target.files);
@@ -1708,8 +1598,7 @@
         uploadButton.addEventListener("click", () => {
           fileInput.click();
         });
-
-        // Sample Analysis button
+      
         sampleAnalysisButton.addEventListener("click", () => {
           showToast("Running sample analysis...", "info");
           setTimeout(() => {
@@ -1718,8 +1607,7 @@
             showToast("Sample analysis complete", "success");
           }, 1500);
         });
-
-        // Analyze
+      
         analyzeButton.addEventListener("click", () => {
           analyzeButton.classList.add("analyzing");
           setTimeout(() => {
@@ -1729,21 +1617,18 @@
             showToast("Analysis complete", "success");
           }, 2000);
         });
-
-        // Mode selection
+      
         modeCards.forEach((card) => {
           card.addEventListener("click", () => {
             modeCards.forEach((c) => c.classList.remove("active"));
             card.classList.add("active");
           });
         });
-
-        // Toggle settings
+      
         toggleSettings.addEventListener("click", () => {
           settingsPanel.classList.toggle("active");
         });
-
-        // Update conversation - iMessage style bubbles
+      
         function updateConversationHistory() {
           conversationHistoryDiv.innerHTML = "";
           conversationHistory.forEach((msg) => {
@@ -1754,45 +1639,36 @@
           });
           conversationHistoryDiv.scrollTop = conversationHistoryDiv.scrollHeight;
         }
-
-        // Clear chat functionality
+      
         clearChatButton.addEventListener("click", () => {
           conversationHistory = [];
           conversationHistoryDiv.innerHTML = "";
           conversationHistoryDiv.classList.remove("active");
           showToast("Chat cleared", "info");
         });
-
-        // Handle suggestion clicks
+      
         suggestionEmail.addEventListener("click", () => {
           messageInput.value = "How would I respond to this email?";
           sendMessage();
         });
-
         suggestionDinner.addEventListener("click", () => {
           messageInput.value = "Write a message about dinner plans";
           sendMessage();
         });
-
         suggestionProfessional.addEventListener("click", () => {
           messageInput.value = "Draft a professional message for me";
           sendMessage();
         });
-
-        // Send message
+      
         async function sendMessage() {
           const userMessage = messageInput.value.trim();
           if (!userMessage) return;
-
-          // Show conversation history if this is the first message
           if (!conversationHistory.length) {
             conversationHistoryDiv.classList.add("active");
           }
-
           conversationHistory.push({ role: "user", content: userMessage });
           updateConversationHistory();
           messageInput.value = "";
-
           const activeMode = document.querySelector(".mode-card.active").dataset.mode;
           if (conversationHistory.length === 1) {
             conversationHistory.unshift({
@@ -1805,19 +1681,27 @@
             return;
           }
           showToast("Sending message...", "info");
-
-          // Map slider to temperature
           const creativityVal = parseInt(creativitySlider.value);
           let temperature;
           switch (creativityVal) {
-            case 1: temperature = 0.2; break;
-            case 2: temperature = 0.4; break;
-            case 3: temperature = 0.7; break;
-            case 4: temperature = 0.9; break;
-            case 5: temperature = 1.0; break;
-            default: temperature = 0.7;
+            case 1:
+              temperature = 0.2;
+              break;
+            case 2:
+              temperature = 0.4;
+              break;
+            case 3:
+              temperature = 0.7;
+              break;
+            case 4:
+              temperature = 0.9;
+              break;
+            case 5:
+              temperature = 1.0;
+              break;
+            default:
+              temperature = 0.7;
           }
-
           try {
             const response = await fetch("https://api.openai.com/v1/chat/completions", {
               method: "POST",
@@ -1828,7 +1712,7 @@
               body: JSON.stringify({
                 model: "gpt-4",
                 messages: conversationHistory,
-                temperature
+                temperature,
               }),
             });
             const data = await response.json();
@@ -1849,7 +1733,7 @@
             showToast("Error: " + error.message, "error");
           }
         }
-
+      
         sendButton.addEventListener("click", sendMessage);
         messageInput.addEventListener("keydown", (e) => {
           if (e.key === "Enter" && !e.shiftKey) {
@@ -1857,30 +1741,53 @@
             sendMessage();
           }
         });
-
-        // Slider label updates
+      
         lengthSlider.addEventListener("input", () => {
           const value = lengthSlider.value;
           let text;
           switch (value) {
-            case "1": text = "Very Short"; break;
-            case "2": text = "Short"; break;
-            case "3": text = "Medium"; break;
-            case "4": text = "Long"; break;
-            case "5": text = "Very Long"; break;
+            case "1":
+              text = "Very Short";
+              break;
+            case "2":
+              text = "Short";
+              break;
+            case "3":
+              text = "Medium";
+              break;
+            case "4":
+              text = "Long";
+              break;
+            case "5":
+              text = "Very Long";
+              break;
+            default:
+              text = "Medium";
           }
           lengthValue.textContent = text;
         });
-
+      
         creativitySlider.addEventListener("input", () => {
           const value = creativitySlider.value;
           let text;
           switch (value) {
-            case "1": text = "Very Low"; break;
-            case "2": text = "Low"; break;
-            case "3": text = "Balanced"; break;
-            case "4": text = "High"; break;
-            case "5": text = "Very High"; break;
+            case "1":
+              text = "Very Low";
+              break;
+            case "2":
+              text = "Low";
+              break;
+            case "3":
+              text = "Balanced";
+              break;
+            case "4":
+              text = "High";
+              break;
+            case "5":
+              text = "Very High";
+              break;
+            default:
+              text = "Balanced";
           }
           creativityValue.textContent = text;
         });
