@@ -5,23 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Personalized Convo Bot - AI-Powered Messaging Assistant</title>
 
-   <!-- Load Three.js first -->
-  <script src="lib/three.min.js"></script>
-  
-  <!-- GSAP -->
-  <script src="lib/gsap.min.js"></script>
-  
-  <!-- Postprocessing / Shaders in correct order -->
-  <script src="lib/CopyShader.js"></script>
-  <script src="lib/ShaderPass.js"></script>
-  <script src="lib/RenderPass.js"></script>
-  <script src="lib/EffectComposer.js"></script>
-  <script src="lib/LuminosityHighPassShader.js"></script>
-  <script src="lib/UnrealBloomPass.js"></script>
-  
-  <!-- Finally, your custom background experience script -->
-  <script src="background-experience.js" defer></script>
+    <script type="module">
+      import * as THREE from './lib/three.module.js';
+      import { CopyShader } from './lib/CopyShader.js';
+      import { ShaderPass } from './lib/ShaderPass.js';
+      import { RenderPass } from './lib/RenderPass.js';
+      import { EffectComposer } from './lib/EffectComposer.js';
+      import { LuminosityHighPassShader } from './lib/LuminosityHighPassShader.js';
+      import { UnrealBloomPass } from './lib/UnrealBloomPass.js';
+      
+      // Make THREE and postprocessing libraries available globally
+      window.THREE = THREE;
+      window.EffectComposer = EffectComposer;
+      window.RenderPass = RenderPass;
+      window.UnrealBloomPass = UnrealBloomPass;
+    </script>
 
+    <!-- Load GSAP -->
+    <script src="./lib/gsap.js"></script>
+    
+    <!-- Load your background experience last -->
+    <script src="./background-experience.js" type="module" defer></script>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
       
