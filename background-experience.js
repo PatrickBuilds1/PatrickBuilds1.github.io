@@ -1,4 +1,5 @@
 // background-experience.js
+import * as THREE from './lib/three.module.js';
 
 (function () {
   // Get the canvas element
@@ -94,21 +95,21 @@
 
   // Set up post-processing using EffectComposer and UnrealBloomPass for a dreamy glow
   let composer = null;
-  if (
-    THREE.EffectComposer &&
-    THREE.RenderPass &&
-    THREE.UnrealBloomPass
-  ) {
-    composer = new THREE.EffectComposer(renderer);
-    const renderPass = new THREE.RenderPass(scene, camera);
+  
+  // Check if the postprocessing libraries are available via the global objects
+  if (window.EffectComposer && window.RenderPass && window.UnrealBloomPass) {
+    composer = new window.EffectComposer(renderer);
+    const renderPass = new window.RenderPass(scene, camera);
     composer.addPass(renderPass);
-    const bloomPass = new THREE.UnrealBloomPass(
+    const bloomPass = new window.UnrealBloomPass(
       new THREE.Vector2(window.innerWidth, window.innerHeight),
       1.0, // bloom strength
       0.5, // bloom radius
       0.85 // bloom threshold
     );
     composer.addPass(bloomPass);
+  } else {
+    console.warn("Post-processing libraries not available. Falling back to standard renderer.");
   }
 
   // Animation loop
