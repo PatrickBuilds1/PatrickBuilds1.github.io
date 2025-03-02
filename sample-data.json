@@ -1,0 +1,45 @@
+{
+  "sender": "John Doe",
+  "messages": [
+    {
+      "sender": "John Doe",
+      "content": "Hey, how's it going?",
+      "timestamp": "3/1/2023, 10:15 AM"
+    },
+    {
+      "sender": "Jane Smith",
+      "content": "Not bad! Just working on that project we discussed.",
+      "timestamp": "3/1/2023, 10:17 AM"
+    },
+    {
+      "sender": "John Doe",
+      "content": "Great to hear. I was thinking about grabbing dinner this weekend. Are you free?",
+      "timestamp": "3/1/2023, 10:20 AM"
+    },
+    {
+      "sender": "Jane Smith",
+      "content": "Sounds good! I'm free on Saturday evening.",
+      "timestamp": "3/1/2023, 10:22 AM"
+    },
+    {
+      "sender": "John Doe",
+      "content": "Perfect, let's plan for Saturday at 7pm. I know a nice Italian place downtown.",
+      "timestamp": "3/1/2023, 10:25 AM"
+    },
+    {
+      "sender": "Jane Smith",
+      "content": "I love Italian food! Looking forward to it.",
+      "timestamp": "3/1/2023, 10:28 AM"
+    },
+    {
+      "sender": "John Doe",
+      "content": "Great! I'll make reservations and send you the details later.",
+      "timestamp": "3/1/2023, 10:30 AM"
+    },
+    {
+      "sender": "Jane Smith",
+      "content": "Perfect, thanks for organizing!",
+      "timestamp": "3/1/2023, 10:32 AM"
+    }
+  ]
+} 

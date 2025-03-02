@@ -1,0 +1,2994 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Personalized Convo Bot - AI-Powered Messaging Assistant</title>
+
+    <!-- Import Three.js and shader modules -->
+    <script type="module">
+      import * as THREE from './lib/three.module.js';
+      import { EffectComposer } from './lib/EffectComposer.js';
+      import { RenderPass } from './lib/RenderPass.js';
+      import { ShaderPass } from './lib/ShaderPass.js';
+      import { UnrealBloomPass } from './lib/UnrealBloomPass.js';
+      import { CopyShader } from './lib/CopyShader.js';
+      import { LuminosityHighPassShader } from './lib/LuminosityHighPassShader.js';
+      
+      // Make THREE and postprocessing libraries available globally
+      window.THREE = THREE;
+      window.EffectComposer = EffectComposer;
+      window.RenderPass = RenderPass;
+      window.UnrealBloomPass = UnrealBloomPass;
+    </script>
+    
+    <!-- Import GSAP for animations -->
+    <script src="lib/gsap.js"></script>
+    
+    <!-- Import PDF.js for PDF processing -->
+    <script src="lib/pdfjs/pdf.js"></script>
+    <script src="lib/pdfjs/pdf.worker.js"></script>
+    
+    <!-- Configure PDF.js -->
+    <script>
+      // Set up PDF.js worker location
+      if (typeof pdfjsLib !== 'undefined') {
+        pdfjsLib.GlobalWorkerOptions = pdfjsLib.GlobalWorkerOptions || {};
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'lib/pdfjs/pdf.worker.js';
+      }
+    </script>
+    
+    <!-- Import background experience -->
+    <script type="module" src="background-experience.js"></script>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+      
+      :root {
+        /* Dark Theme Variables (Default) */
+        --bg-primary: #181818;
+        --bg-secondary: #1f1f1f;
+        --bg-tertiary: #2a2a2a;
+        --accent-primary: #7d5fff;
+        --accent-secondary: #5e72eb;
+        --text-primary: #ffffff;
+        --text-secondary: #cccccc;
+        --text-tertiary: #888888;
+        --danger: #ff5e5e;
+        --success: #5e9dff;
+        --warning: #ffce5e;
+        --info: #5eceff;
+        --neutral: #5e8fff;
+        --witty: #ff5ece;
+        --charming: #5effce;
+        --personalized: #ce5eff;
+        --structure: #ff8f5e;
+        --flow: #42c6ff;
+        --toast-success: #5e9dff;
+        --toast-error: #ff5e5e;
+        --toast-info: rgba(0, 0, 0, 0.8);
+        --user-message-bg: #1982FC;
+        --bot-message-bg: #e5e5ea;
+      
+        --radius-sm: 6px;
+        --radius-md: 12px;
+        --radius-lg: 18px;
+      
+        --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+        --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+        --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
+      
+        --transition-fast: 0.15s ease;
+        --transition-normal: 0.3s ease;
+        --transition-slow: 0.4s ease;
+      
+        --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      
+        /* Standard button styles */
+        --btn-padding: 0.6rem 1rem;
+        --btn-font-size: 0.85rem;
+        --btn-font-weight: 600;
+
+        /* Enhanced card variables */
+        --card-bg: rgba(30, 30, 40, 0.5);
+        --card-border: rgba(255, 255, 255, 0.08);
+        --card-glow: rgba(125, 95, 255, 0.15);
+        --progress-thickness: 8px;
+        --progress-bg: rgba(255, 255, 255, 0.08);
+        --indicator-size: 100px;
+      }
+      
+      .light-mode {
+        --bg-primary: #f9f9f9;
+        --bg-secondary: #ffffff;
+        --bg-tertiary: #f0f0f0;
+        --text-primary: #333333;
+        --text-secondary: #555555;
+        --text-tertiary: #808080;
+        --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+        --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+        --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
+        --user-message-bg: #007aff;
+        --bot-message-bg: #e5e5ea;
+        --toast-success: #007aff;
+        --toast-error: #FF3B30;
+        --toast-info: rgba(50, 50, 50, 0.9);
+        /* Enhanced card variables - light theme */
+        --card-bg: rgba(255, 255, 255, 0.7);
+        --card-border: rgba(0, 0, 0, 0.08);
+        --card-glow: rgba(125, 95, 255, 0.12);
+        --progress-bg: rgba(0, 0, 0, 0.08);
+      }
+      
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: var(--font-primary);
+      }
+      
+      body {
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow-x: hidden;
+      }
+      
+      /* Canvas for background experience */
+      #background-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: -1;
+        width: 100%;
+        height: 100%;
+      }
+      
+      header {
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background-color: rgba(0, 0, 0, 0.75);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        transition: transform 0.3s ease;
+      }
+      .light-mode header {
+        background-color: rgba(245, 245, 245, 0.9);
+        border-bottom: 1px solid #cccccc;
+      }
+      header.header-hidden {
+        transform: translateY(-100%);
+      }
+      
+      .logo {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .logo-main {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+      .logo-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-md);
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: var(--shadow-sm);
+      }
+      .logo-text a {
+        font-weight: 700;
+        font-size: 1.4rem;
+        background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-decoration: none;
+      }
+      .logo-text a:hover {
+        opacity: 0.8;
+      }
+      .tagline {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin-left: 2.5rem;
+        margin-top: 0.2rem;
+        font-style: italic;
+      }
+      .header-actions {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+      }
+      .btn {
+        background: var(--bg-tertiary);
+        color: var(--text-secondary);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: var(--btn-padding);
+        border-radius: var(--radius-md);
+        font-weight: var(--btn-font-weight);
+        font-size: var(--btn-font-size);
+        cursor: pointer;
+        transition: all var(--transition-normal);
+      }
+      .btn:hover {
+        background: rgba(125, 95, 255, 0.15);
+      }
+      .light-mode .btn {
+        background: #eeeeee;
+        color: #333333;
+        border: 1px solid #cccccc;
+      }
+      .light-mode .btn:hover {
+        background: #ddd;
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        color: var(--text-primary);
+        border: none;
+      }
+      .light-mode .btn-primary {
+        background: #007aff;
+        color: #ffffff;
+      }
+      .btn-primary:hover {
+        opacity: 0.9;
+      }
+      .header-actions button {
+        background: var(--bg-tertiary);
+        color: var(--text-secondary);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: var(--btn-padding);
+        border-radius: var(--radius-md);
+        font-weight: var(--btn-font-weight);
+        font-size: var(--btn-font-size);
+        cursor: pointer;
+        transition: all var(--transition-normal);
+      }
+      .header-actions button:hover {
+        background: rgba(125, 95, 255, 0.15);
+      }
+      .light-mode .header-actions button {
+        background: #eeeeee;
+        color: #333333;
+        border: 1px solid #cccccc;
+      }
+      .light-mode .header-actions button:hover {
+        background: #ddd;
+      }
+      #theme-toggle::before {
+        content: "Theme";
+      }
+      #help-toggle::before {
+        content: "Help";
+      }
+      #upload-button {
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        color: var(--text-primary);
+      }
+      #upload-button::before {
+        content: "Upload";
+        margin-right: 0.5rem;
+      }
+      .light-mode #upload-button {
+        background: #007aff;
+        color: #ffffff;
+        border: none;
+      }
+      main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+        width: 100%;
+      }
+      section {
+        border-radius: var(--radius-lg);
+        background: var(--bg-secondary);
+        box-shadow: var(--shadow-md);
+        overflow: hidden;
+        transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+        margin-bottom: 1.5rem;
+      }
+      section:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+      }
+      .section-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: linear-gradient(90deg, rgba(125, 95, 255, 0.2), rgba(94, 114, 235, 0.1));
+      }
+      .light-mode .section-header {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        background: linear-gradient(90deg, rgba(0, 122, 255, 0.1), rgba(94, 114, 235, 0.05));
+      }
+      .section-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+        position: relative;
+      }
+      .section-title .highlight {
+        position: relative;
+        color: var(--accent-primary);
+        font-weight: 800;
+      }
+      .section-title .highlight::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 6px;
+        background: linear-gradient(90deg, var(--accent-primary), transparent);
+        border-radius: 3px;
+        opacity: 0.3;
+      }
+      .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -6px;
+        left: 0;
+        width: 40px;
+        height: 3px;
+        background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+        border-radius: 3px;
+      }
+      .section-content {
+        padding: 1.5rem;
+      }
+      .intro-text {
+        margin-bottom: 1.5rem;
+        font-size: 1rem;
+        color: var(--text-secondary);
+        line-height: 1.7;
+        background: rgba(125, 95, 255, 0.05);
+        padding: 1.5rem;
+        border-radius: var(--radius-md);
+        border-left: 4px solid var(--accent-primary);
+      }
+      .intro-text strong {
+        color: var(--text-primary);
+        font-weight: 600;
+      }
+      .export-instructions {
+        margin: 1.5rem 0;
+        padding: 1rem;
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-md);
+        border-left: 4px solid var(--accent-primary);
+      }
+      .export-instructions h3 {
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+        font-size: 1rem;
+      }
+      .export-instructions p {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        line-height: 1.5;
+      }
+      .drag-area {
+        border: 2px dashed rgba(255, 255, 255, 0.1);
+        border-radius: var(--radius-md);
+        padding: 3rem 2rem;
+        text-align: center;
+        transition: all var(--transition-normal);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        min-height: 240px;
+      }
+      .light-mode .drag-area {
+        border: 2px dashed rgba(0, 0, 0, 0.1);
+      }
+      .drag-area:hover,
+      .drag-area.active {
+        border-color: var(--accent-primary);
+        background: rgba(125, 95, 255, 0.05);
+      }
+      .drag-icon {
+        width: 64px;
+        height: 64px;
+        fill: currentColor;
+        opacity: 0.8;
+        transition: all var(--transition-normal);
+      }
+      .drag-text {
+        font-size: 1.2rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+        transition: all var(--transition-normal);
+      }
+      .drag-hint {
+        font-size: 0.9rem;
+        color: var(--text-tertiary);
+      }
+      .sample-analysis-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 1.5rem;
+        margin-bottom: 0.5rem;
+      }
+      .sample-analysis-button {
+        background: var(--accent-primary);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.25rem;
+        border-radius: var(--radius-md);
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all var(--transition-normal);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: var(--shadow-sm);
+      }
+      .sample-analysis-button:hover {
+        background: var(--accent-secondary);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+      }
+      .sample-analysis-button svg {
+        width: 20px;
+        height: 20px;
+      }
+      .or-divider {
+        display: flex;
+        align-items: center;
+        margin: 1.5rem 0;
+        color: var(--text-tertiary);
+        font-size: 0.9rem;
+      }
+      .or-divider::before,
+      .or-divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.1);
+        margin: 0 1rem;
+      }
+      .light-mode .or-divider::before,
+      .light-mode .or-divider::after {
+        background: rgba(0, 0, 0, 0.1);
+      }
+      .file-info {
+        margin-top: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-md);
+        width: 100%;
+        max-width: 400px;
+      }
+      .file-icon {
+        width: 24px;
+        height: 24px;
+        fill: currentColor;
+      }
+      .file-name {
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .file-remove {
+        color: var(--danger);
+        cursor: pointer;
+        width: 20px;
+        height: 20px;
+        fill: currentColor;
+        transition: all var(--transition-fast);
+      }
+      .file-remove:hover {
+        transform: scale(1.1);
+      }
+      .analyze-button {
+        margin-top: 1.5rem;
+        width: 100%;
+        max-width: 400px;
+        padding: 0.75rem;
+        font-size: 1rem;
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        color: var(--text-primary);
+        border: none;
+        border-radius: var(--radius-md);
+        cursor: pointer;
+      }
+      .light-mode .analyze-button {
+        background: #007aff;
+        color: #fff;
+      }
+      .analyze-button .spinner {
+        display: none;
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: rotate 1s linear infinite;
+        position: absolute;
+        right: 1.2rem;
+      }
+      .analyzing .spinner {
+        display: block;
+      }
+      .analyzing .btn-text {
+        opacity: 0.7;
+      }
+      .results {
+        display: none;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .results.active {
+        display: flex;
+      }
+      .result-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        perspective: 1000px;
+      }
+      
+      /* Enhanced Result Cards Styling */
+      .result-card {
+        position: relative;
+        background: var(--card-bg);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: var(--radius-lg);
+        padding: 1.75rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        border: 1px solid var(--card-border);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 0 0 1px var(--card-border);
+        transform-style: preserve-3d;
+        overflow: hidden;
+        z-index: 1;
+      }
+      
+      .result-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), var(--card-glow), transparent 50%);
+        opacity: 0;
+        transition: opacity 0.5s ease;
+      }
+      
+      .result-card:hover {
+        transform: translateY(-10px) rotateX(3deg) rotateY(3deg);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2), 0 0 0 1px var(--card-border);
+      }
+      
+      .result-card:hover::before {
+        opacity: 1;
+      }
+      
+      .result-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 2;
+      }
+      
+      .result-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        fill: currentColor;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .result-icon::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at center, rgba(255,255,255,0.8) 0%, transparent 70%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      
+      .result-card:hover .result-icon::after {
+        opacity: 0.2;
+        animation: pulse 2s infinite;
+      }
+      
+      .result-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -0.01em;
+      }
+      
+      /* Circular Progress Indicator */
+      .progress-container {
+        position: relative;
+        width: var(--indicator-size);
+        height: var(--indicator-size);
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      .progress-circle {
+        width: 100%;
+        height: 100%;
+        fill: none;
+        stroke: var(--progress-bg);
+        stroke-width: var(--progress-thickness);
+        transform: rotate(-90deg);
+        transform-origin: center;
+        stroke-linecap: round;
+      }
+      
+      .progress-circle-fill {
+        fill: none;
+        stroke-width: var(--progress-thickness);
+        stroke-linecap: round;
+        stroke-dasharray: 301.59; /* Circumference of a circle with r=48 (2πr) */
+        stroke-dashoffset: calc(301.59 - ((var(--progress, 0) / 100) * 301.59));
+        transition: stroke-dashoffset 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        filter: drop-shadow(0 0 6px var(--glow-color, rgba(125, 95, 255, 0.5)));
+      }
+      
+      .personality-circle {
+        stroke: var(--info);
+      }
+      
+      .pattern-circle {
+        stroke: var(--warning);
+      }
+      
+      .sentiment-circle {
+        stroke: var(--success);
+      }
+      
+      .emoji-circle {
+        stroke: var(--witty);
+      }
+      
+      .structure-circle {
+        stroke: var(--structure);
+      }
+      
+      .flow-circle {
+        stroke: var(--flow);
+      }
+      
+      .progress-value {
+        position: absolute;
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1;
+        color: var(--text-primary);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+      
+      .progress-label {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        margin-top: 0.25rem;
+      }
+      
+      .result-description {
+        font-size: 0.95rem;
+        color: var(--text-secondary);
+        line-height: 1.6;
+        z-index: 2;
+        position: relative;
+      }
+      
+      /* Specific icon styling with gradients */
+      .personality-icon {
+        background: linear-gradient(135deg, var(--info), var(--neutral));
+      }
+      .pattern-icon {
+        background: linear-gradient(135deg, var(--warning), var(--danger));
+      }
+      .sentiment-icon {
+        background: linear-gradient(135deg, var(--success), var(--info));
+      }
+      .emoji-icon {
+        background: linear-gradient(135deg, var(--witty), var(--charming));
+      }
+      .structure-icon {
+        background: linear-gradient(135deg, var(--structure), #ff6b2b);
+      }
+      .flow-icon {
+        background: linear-gradient(135deg, var(--flow), #3e97ff);
+      }
+
+      /* Particle effects */
+      .card-particles-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        border-radius: var(--radius-lg);
+        pointer-events: none;
+        z-index: 1;
+      }
+      
+      .card-particle {
+        position: absolute;
+        background: rgba(255, 255, 255, 0.4);
+        border-radius: 50%;
+        pointer-events: none;
+        opacity: 0;
+        animation: floatParticle 3s infinite ease-in-out;
+      }
+      
+      .response-modes {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+      .mode-card {
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-md);
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        cursor: pointer;
+        transition: all var(--transition-normal);
+        border: 2px solid transparent;
+        position: relative;
+        overflow: hidden;
+      }
+      .mode-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+        opacity: 0;
+        transition: opacity var(--transition-normal);
+        pointer-events: none;
+      }
+      .light-mode .mode-card::after {
+        background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.05), transparent);
+      }
+      .mode-card:hover::after {
+        opacity: 1;
+        animation: shimmer 2s infinite;
+      }
+      .mode-card.active {
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 15px rgba(125, 95, 255, 0.3);
+      }
+      .mode-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .mode-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        fill: currentColor;
+      }
+      .mode-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+      }
+      .mode-description {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        line-height: 1.5;
+      }
+      .personalized-icon {
+        background: linear-gradient(135deg, var(--personalized), #ab46cc);
+      }
+      .charming-icon {
+        background: linear-gradient(135deg, var(--charming), #46ccab);
+      }
+      .neutral-icon {
+        background: linear-gradient(135deg, var(--neutral), #4671cc);
+      }
+      .witty-icon {
+        background: linear-gradient(135deg, var(--witty), #cc46ab);
+      }
+      .suggestion-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+      }
+      .suggestion-button {
+        background: var(--bg-tertiary);
+        color: var(--text-secondary);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: var(--radius-md);
+        padding: 0.8rem 1.2rem;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all var(--transition-normal);
+        flex: 1;
+        min-width: 200px;
+        text-align: left;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .suggestion-button:hover {
+        background: rgba(125, 95, 255, 0.1);
+        border-color: var(--accent-primary);
+      }
+      .suggestion-button svg {
+        width: 18px;
+        height: 18px;
+        color: var(--accent-primary);
+        flex-shrink: 0;
+      }
+      .light-mode .suggestion-button {
+        background: #f5f5f5;
+        border-color: #e0e0e0;
+      }
+      .light-mode .suggestion-button:hover {
+        background: rgba(0, 122, 255, 0.05);
+        border-color: #007aff;
+      }
+      .chat-controls {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-top: 1rem;
+      }
+      #clear-chat {
+        background: var(--bg-tertiary);
+        color: var(--text-secondary);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 0.75rem 1rem;
+        border-radius: var(--radius-md);
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all var(--transition-normal);
+      }
+      #clear-chat:hover {
+        background: rgba(255, 94, 94, 0.15);
+        color: var(--danger);
+      }
+      .light-mode #clear-chat {
+        background: #eeeeee;
+        border: 1px solid #cccccc;
+      }
+      .light-mode #clear-chat:hover {
+        background: rgba(255, 59, 48, 0.1);
+        color: #FF3B30;
+      }
+      .query-input {
+        display: flex;
+        align-items: center;
+        background: var(--bg-tertiary);
+        padding: 1rem;
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        margin-top: 1rem;
+        gap: 0.75rem;
+        flex: 1;
+      }
+      .message-input {
+        flex: 1;
+        background: var(--bg-tertiary);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: var(--radius-md);
+        padding: 0.75rem 1rem;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        text-align: left;
+        resize: vertical;
+        overflow-y: auto;
+        min-height: 48px;
+        transition: all var(--transition-normal);
+      }
+      .light-mode .message-input {
+        border: 1px solid rgba(0, 0, 0, 0.1);
+      }
+      .message-input:focus {
+        outline: none;
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 0 2px rgba(125, 95, 255, 0.2);
+      }
+      .send-button {
+        padding: 0.75rem 1.25rem;
+        border-radius: var(--radius-md);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        color: var(--text-primary);
+        border: none;
+        cursor: pointer;
+        min-width: 80px;
+      }
+      .light-mode .send-button {
+        background: #007aff;
+        color: #ffffff;
+      }
+      .send-button span {
+        font-size: 0.9rem;
+      }
+      #conversation-history {
+        margin-top: 1rem;
+        padding: 1.2rem;
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-md);
+        max-height: 350px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        display: none;
+        gap: 0.8rem;
+      }
+      #conversation-history.active {
+        display: flex;
+      }
+      .message {
+        margin-bottom: 0.5rem;
+        padding: 0.65rem 1rem;
+        border-radius: 18px;
+        max-width: 75%;
+        line-height: 1.4;
+        word-wrap: break-word;
+        position: relative;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      }
+      .message p {
+        margin: 0;
+        padding: 0;
+      }
+      .message .message-time {
+        display: block;
+        font-size: 0.7rem;
+        margin-top: 0.3rem;
+        opacity: 0.7;
+        text-align: right;
+        color: inherit;
+      }
+      .sent {
+        background: var(--user-message-bg);
+        color: #fff;
+        align-self: flex-end;
+        border-bottom-right-radius: 5px;
+        margin-left: auto;
+      }
+      .sent::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        right: -8px;
+        width: 16px;
+        height: 16px;
+        background: var(--user-message-bg);
+        border-bottom-left-radius: 16px;
+        z-index: -1;
+      }
+      .received {
+        background: var(--bot-message-bg);
+        align-self: flex-start;
+        color: var(--text-primary);
+        border-bottom-left-radius: 5px;
+      }
+      .received::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: -8px;
+        width: 16px;
+        height: 16px;
+        background: var(--bot-message-bg);
+        border-bottom-right-radius: 16px;
+        z-index: -1;
+      }
+      .light-mode .received {
+        color: #333333;
+      }
+      
+      /* Typing indicator styles */
+      .typing-indicator {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 15px !important;
+        min-width: 60px;
+        max-width: 60px;
+      }
+      
+      .typing-indicator span {
+        height: 8px;
+        width: 8px;
+        margin: 0 2px;
+        background-color: #bbb;
+        border-radius: 50%;
+        display: inline-block;
+        opacity: 0.7;
+        animation: typing-dot 1.4s infinite ease-in-out both;
+      }
+      
+      .typing-indicator span:nth-child(1) {
+        animation-delay: 0s;
+      }
+      
+      .typing-indicator span:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      
+      .typing-indicator span:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+      
+      @keyframes typing-dot {
+        0%, 80%, 100% { transform: scale(0.7); }
+        40% { transform: scale(1.2); }
+      }
+      
+      .settings-panel {
+        display: none;
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        padding: 1rem 1.5rem;
+        border-radius: var(--radius-md);
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-normal);
+      }
+      .settings-panel.active {
+        display: block;
+      }
+      .settings-panel h3 {
+        margin-bottom: 1rem;
+        font-size: 1rem;
+        color: var(--text-secondary);
+        text-align: center;
+      }
+      .slider-container {
+        width: 100%;
+        margin-bottom: 1.5rem;
+      }
+      .slider-label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+      }
+      .slider {
+        -webkit-appearance: none;
+        width: 100%;
+        height: 6px;
+        border-radius: 3px;
+        background: rgba(255, 255, 255, 0.1);
+        outline: none;
+        transition: background var(--transition-normal);
+      }
+      .light-mode .slider {
+        background: rgba(0, 0, 0, 0.1);
+      }
+      .slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--accent-primary);
+        cursor: pointer;
+        transition: all var(--transition-normal);
+        border: 2px solid var(--bg-tertiary);
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+      }
+      .slider::-moz-range-thumb {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--accent-primary);
+        cursor: pointer;
+        transition: all var(--transition-normal);
+        border: 2px solid var(--bg-tertiary);
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+      }
+      .slider:hover::-webkit-slider-thumb {
+        transform: scale(1.1);
+        box-shadow: 0 0 10px rgba(125, 95, 255, 0.4);
+      }
+      .slider:hover::-moz-range-thumb {
+        transform: scale(1.1);
+        box-shadow: 0 0 10px rgba(125, 95, 255, 0.4);
+      }
+      #toast-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 200;
+      }
+      .toast {
+        padding: 0.75rem 1rem;
+        margin-top: 10px;
+        border-radius: var(--radius-md);
+        opacity: 0;
+        animation: fadeIn 0.5s forwards;
+        color: var(--text-primary);
+      }
+      .toast.success {
+        background: var(--toast-success);
+        color: #fff;
+      }
+      .toast.error {
+        background: var(--toast-error);
+        color: #fff;
+      }
+      .toast.info {
+        background: var(--toast-info);
+        color: #fff;
+      }
+      footer {
+        text-align: center;
+        padding: 1.5rem;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        margin-top: 2rem;
+      }
+      .light-mode footer {
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+      }
+      .privacy-notice {
+        margin-top: 0.5rem;
+        font-size: 0.75rem;
+        line-height: 1.4;
+        color: var(--text-tertiary);
+        max-width: 600px;
+        margin: 0.5rem auto 0 auto;
+      }
+      .creator {
+        font-size: 0.75rem;
+        color: var(--text-tertiary);
+        margin-top: 0.5rem;
+      }
+      #help-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.6);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+      }
+      .light-mode #help-modal {
+        background: rgba(0, 0, 0, 0.4);
+      }
+      #help-modal.active {
+        display: flex;
+      }
+      #help-modal .modal-content {
+        background: var(--bg-secondary);
+        padding: 2.5rem;
+        border-radius: var(--radius-md);
+        max-width: 550px;
+        width: 90%;
+        box-shadow: var(--shadow-lg);
+        text-align: center;
+      }
+      #help-modal h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 2rem;
+      }
+      #help-modal ul {
+        list-style: none;
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+      #help-modal li {
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+        line-height: 1.5;
+        color: var(--text-secondary);
+      }
+      #help-modal .close-btn {
+        display: inline-block;
+        padding: 0.8rem 2.5rem;
+        background: #7d5fff;
+        color: white;
+        border: none;
+        border-radius: var(--radius-md);
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      #help-modal .close-btn:hover {
+        opacity: 0.9;
+      }
+      @media (max-width: 768px) {
+        header {
+          flex-direction: column;
+          gap: 1rem;
+        }
+        .header-actions {
+          width: 100%;
+          justify-content: space-between;
+        }
+        .tagline {
+          margin-left: 0;
+          text-align: center;
+          margin-top: 0.5rem;
+        }
+        .query-input {
+          flex-direction: column;
+          gap: 0.75rem;
+        }
+        .message-input {
+          width: 100%;
+        }
+        .send-button {
+          width: 100%;
+        }
+        .chat-controls {
+          flex-direction: column;
+        }
+        #clear-chat {
+          width: 100%;
+        }
+        #help-modal .modal-content {
+          padding: 1.5rem;
+          width: 95%;
+        }
+        .suggestion-buttons {
+          flex-direction: column;
+        }
+        .suggestion-button {
+          width: 100%;
+        }
+      }
+      
+      /* New animations for enhanced cards */
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+      }
+      
+      @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      
+      @keyframes pulse {
+        0% { opacity: 0.2; }
+        50% { opacity: 0.5; }
+        100% { opacity: 0.2; }
+      }
+      
+      @keyframes floatParticle {
+        0% { 
+          transform: translateY(0) translateX(0);
+          opacity: 0;
+        }
+        25% {
+          opacity: 0.5;
+        }
+        75% {
+          opacity: 0.5;
+        }
+        100% { 
+          transform: translateY(-30px) translateX(10px); 
+          opacity: 0;
+        }
+      }
+      
+      @keyframes vibrate {
+        0% { transform: translate(0); }
+        20% { transform: translate(-2px, 2px); }
+        40% { transform: translate(-2px, -2px); }
+        60% { transform: translate(2px, 2px); }
+        80% { transform: translate(2px, -2px); }
+        100% { transform: translate(0); }
+      }
+      
+      @keyframes gradientWave {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+      
+      @keyframes grow {
+        0% { transform: scale(0.95); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(0.95); }
+      }
+
+      .mode-card.active {
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 15px rgba(125, 95, 255, 0.3);
+      }
+
+      .settings-help-text {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        margin-top: 0.5rem;
+        font-style: italic;
+        opacity: 0.8;
+        line-height: 1.4;
+      }
+
+      .token-info {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        margin-top: 0.5rem;
+        opacity: 0.7;
+        text-align: right;
+        padding-top: 4px;
+        border-top: 1px dashed var(--border-color);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Canvas for background experience -->
+    <canvas id="background-canvas"></canvas>
+    
+    <header id="site-header">
+      <div class="logo">
+        <div class="logo-main">
+          <div class="logo-icon">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path
+                d="M12 3c1.5 0 2.25 0 3 1.5 0.75 1.5 0.75 1.5 1.5 3 0.75-1.5 0.75-1.5 1.5-3 0.75-1.5 1.5-1.5 3-1.5-1.5 0-2.25 0-3-1.5-0.75-1.5-0.75-1.5-1.5-3-0.75 1.5-0.75 1.5-1.5 3-0.75 1.5-1.5 1.5-3 1.5z"
+              ></path>
+              <path
+                d="M12 9c1 0 1.5 0 2 1 0.5 1 0.5 1 1 2 0.5-1 0.5-1 1-2 0.5-1 1-1 2-1-1.5 0-1.5 0-2 1z"
+              ></path>
+              <path
+                d="M5.5 16c0.828 0 1.5 0.672 1.5 1.5s-0.672 1.5-1.5 1.5-1.5-0.672-1.5-1.5 0.672-1.5 1.5-1.5z"
+              ></path>
+            </svg>
+          </div>
+          <div class="logo-text">
+            <a href="#upload-section">Personalized Convo Bot</a>
+          </div>
+        </div>
+        <div class="tagline">Be you, even when you're not there.</div>
+      </div>
+      <div class="header-actions">
+        <button id="theme-toggle" class="btn"></button>
+        <button id="help-toggle" class="btn"></button>
+        <button id="upload-button" class="btn btn-primary"></button>
+      </div>
+    </header>
+    
+    <main>
+      <section id="upload-section">
+        <div class="section-header">
+          <h2 class="section-title"><span class="highlight">Me</span>ssage Analysis</h2>
+        </div>
+        <div class="section-content">
+          <p class="intro-text">
+            <strong>Personalized Convo Bot</strong> uses advanced AI to analyze your communication patterns and respond exactly like you would. 
+            Upload your messages, emails, or any text conversations to create a <strong>digital twin</strong> that captures your unique tone, 
+            style, humor, and personality traits. Whether you need help with customer responses, want to maintain connections 
+            during busy periods, or simply curious about your communication style, our tool gives you insights while 
+            preserving your authentic voice.
+          </p>
+          
+          <div class="export-instructions">
+            <h3>How to Export iMessage Data:</h3>
+            <p>
+              Open the Messages app on your Mac, select a conversation, then go to "File → Print." From the print dialog, select "Save as PDF" or export as text. 
+              Upload that file here for analysis.
+            </p>
+          </div>
+          
+          <div class="drag-area" id="drop-zone">
+            <svg class="drag-icon" viewBox="0 0 24 24">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            <h3 class="drag-text">Drag & Drop your files here</h3>
+            <p class="drag-hint">or click to browse</p>
+            <input type="file" id="file-input" style="display: none;" />
+          </div>
+          
+          <div class="or-divider">OR</div>
+          <div class="sample-analysis-container">
+            <button id="sample-analysis-button" class="sample-analysis-button">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+              </svg>
+              Try Sample Analysis
+            </button>
+          </div>
+          
+          <div id="file-info-container" style="display: none;">
+            <div class="file-info">
+              <svg class="file-icon" viewBox="0 0 24 24">
+                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                <polyline points="13 2 13 9 20 9"></polyline>
+              </svg>
+              <span class="file-name" id="file-name">messages.csv</span>
+              <svg class="file-remove" id="remove-file" viewBox="0 0 24 24">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </div>
+            <button class="analyze-button btn btn-primary" id="analyze-button">
+              <span class="btn-text">Analyze Messages</span>
+              <div class="spinner"></div>
+            </button>
+          </div>
+        </div>
+      </section>
+      
+      <div class="results" id="results">
+        <section id="analysis-section">
+          <div class="section-header">
+            <h2 class="section-title">Analysis Results</h2>
+          </div>
+          <div class="section-content">
+            <div class="result-grid">
+              <!-- Personality Card -->
+              <div class="result-card">
+                <div class="card-particles-container"></div>
+                <div class="result-header">
+                  <div class="result-icon personality-icon">
+                    <svg class="icon" viewBox="0 0 24 24">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="9" cy="7" r="4"></circle>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                  </div>
+                  <h3 class="result-title">Personality</h3>
+                </div>
+                <div class="progress-container">
+                  <svg class="progress-circle" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="48"></circle>
+                  </svg>
+                  <svg class="progress-circle" viewBox="0 0 100 100">
+                    <circle class="progress-circle-fill personality-circle" cx="50" cy="50" r="48" style="--progress: 78; --glow-color: rgba(94, 158, 255, 0.5);"></circle>
+                  </svg>
+                  <div class="progress-value">
+                    <span>Friendly</span>
+                    <div class="progress-label">78%</div>
+                  </div>
+                </div>
+                <p class="result-description">
+                  Your messaging style appears warm and approachable. You use positive language, ask questions, and engage meaningfully in conversations.
+                </p>
+              </div>
+              
+              <!-- Response Pattern Card -->
+              <div class="result-card">
+                <div class="card-particles-container"></div>
+                <div class="result-header">
+                  <div class="result-icon pattern-icon">
+                    <svg class="icon" viewBox="0 0 24 24">
+                      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                    </svg>
+                  </div>
+                  <h3 class="result-title">Response Pattern</h3>
+                </div>
+                <div class="progress-container">
+                  <svg class="progress-circle" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="48"></circle>
+                  </svg>
+                  <svg class="progress-circle" viewBox="0 0 100 100">
+                    <circle class="progress-circle-fill pattern-circle" cx="50" cy="50" r="48" style="--progress: 65; --glow-color: rgba(255, 206, 94, 0.5);"></circle>
+                  </svg>
+                  <div class="progress-value">
+                    <span>Quick</span>
+                    <div class="progress-label">65%</div>
+                  </div>
+                </div>
+                <p class="result-description">
+                  You typically respond within 15 minutes during active conversations. Your messages tend to be concise but thoughtful.
+                </p>
+              </div>
+              
+              <!-- Sentiment Card -->
+              <div class="result-card">
+                <div class="card-particles-container"></div>
+                <div class="result-header">
+                  <div class="result-icon sentiment-icon">
+                    <svg class="icon" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                      <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                      <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                    </svg>
+                  </div>
+                  <h3 class="result-title">Sentiment</h3>
+                </div>
+                <div class="progress-container">
+                  <svg class="progress-circle" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="48"></circle>
+                  </svg>
+                  <svg class="progress-circle" viewBox="0 0 100 100">
+                    <circle class="progress-circle-fill sentiment-circle" cx="50" cy="50" r="48" style="--progress: 82; --glow-color: rgba(94, 157, 255, 0.5);"></circle>
+                  </svg>
+                  <div class="progress-value">
+                    <span>Positive</span>
+                    <div class="progress-label">82%</div>
+                  </div>
+                </div>
+                <p class="result-description">
+                  Your messages convey a consistently positive tone. You frequently use encouraging words and supportive language.
+                </p>
+              </div>
+              
+              <!-- Emoji Usage Card -->
+              <div class="result-card">
+                <div class="card-particles-container"></div>
+                <div class="result-header">
+                  <div class="result-icon emoji-icon">
+                    <svg class="icon" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                      <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                      <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                    </svg>
+                  </div>
+                  <h3 class="result-title">Emoji Usage</h3>
+                </div>
+                <div class="progress-container">
+                  <svg class="progress-circle" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="48"></circle>
+                  </svg>
+                  <svg class="progress-circle" viewBox="0 0 100 100">
+                    <circle class="progress-circle-fill emoji-circle" cx="50" cy="50" r="48" style="--progress: 45; --glow-color: rgba(255, 94, 206, 0.5);"></circle>
+                  </svg>
+                  <div class="progress-value">
+                    <span>Moderate</span>
+                    <div class="progress-label">45%</div>
+                  </div>
+                </div>
+                <p class="result-description">
+                  You use emojis selectively to emphasize points. Most commonly used: 😊, 👍, and 😂.
+                </p>
+              </div>
+              
+<!-- Message Structure Card -->
+<div class="result-card">
+  <div class="card-particles-container"></div>
+  <div class="result-header">
+    <div class="result-icon structure-icon">
+      <svg class="icon" viewBox="0 0 24 24">
+        <line x1="8" y1="6" x2="21" y2="6"></line>
+        <line x1="8" y1="12" x2="21" y2="12"></line>
+        <line x1="8" y1="18" x2="21" y2="18"></line>
+        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+      </svg>
+    </div>
+    <h3 class="result-title">Message Structure</h3>
+  </div>
+  <div class="progress-container">
+    <svg class="progress-circle" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="48"></circle>
+    </svg>
+    <svg class="progress-circle" viewBox="0 0 100 100">
+      <circle class="progress-circle-fill structure-circle" cx="50" cy="50" r="48" style="--progress: 70; --glow-color: rgba(255, 143, 94, 0.5);"></circle>
+    </svg>
+    <div class="progress-value">
+      <span>Concise</span>
+      <div class="progress-label">70%</div>
+    </div>
+  </div>
+  <p class="result-description">
+    You tend to write in short, focused paragraphs. Your messages have a clear structure that makes your points easy to follow.
+  </p>
+</div>
+
+<!-- Conversation Flow Card -->
+<div class="result-card">
+  <div class="card-particles-container"></div>
+  <div class="result-header">
+    <div class="result-icon flow-icon">
+      <svg class="icon" viewBox="0 0 24 24">
+        <polyline points="17 1 21 5 17 9"></polyline>
+        <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+        <polyline points="7 23 3 19 7 15"></polyline>
+        <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+      </svg>
+    </div>
+    <h3 class="result-title">Conversation Flow</h3>
+  </div>
+  <div class="progress-container">
+    <svg class="progress-circle" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="48"></circle>
+    </svg>
+    <svg class="progress-circle" viewBox="0 0 100 100">
+      <circle class="progress-circle-fill flow-circle" cx="50" cy="50" r="48" style="--progress: 85; --glow-color: rgba(66, 198, 255, 0.5);"></circle>
+    </svg>
+    <div class="progress-value">
+      <span>Connective</span>
+      <div class="progress-label">85%</div>
+    </div>
+  </div>
+  <p class="result-description">
+    You naturally guide conversations with smooth transitions between topics. You often build on previous messages rather than abruptly changing subjects.
+  </p>
+</div>
+</div>
+</div>
+</section>
+
+<section id="modes-section">
+<div class="section-header">
+<h2 class="section-title">Response Modes</h2>
+<button class="btn" id="toggle-settings">Settings</button>
+</div>
+<div class="section-content">
+<div class="settings-panel" id="settings-panel">
+<h3>Response Settings</h3>
+<div class="slider-container">
+  <div class="slider-label">
+    <span class="slider-title">Response Length</span>
+    <span class="slider-value" id="length-value">Medium</span>
+  </div>
+  <input type="range" min="1" max="5" value="3" class="slider" id="length-slider" />
+</div>
+<div class="slider-container">
+  <div class="slider-label">
+    <span class="slider-title">Creativity Level</span>
+    <span class="slider-value" id="creativity-value">Balanced</span>
+  </div>
+  <input type="range" min="1" max="5" value="3" class="slider" id="creativity-slider" />
+</div>
+<div class="slider-container">
+  <div class="slider-label">
+    <span class="slider-title">Token Limit</span>
+    <span class="slider-value" id="token-limit-value">300</span>
+  </div>
+  <input type="range" min="100" max="1000" step="100" value="300" class="slider" id="token-limit-slider" />
+  <p class="settings-help-text">Lower token limits reduce costs and speed up responses during testing. Each token is roughly 4 characters or 3/4 of a word.</p>
+</div>
+</div>
+
+<div class="response-modes">
+<div class="mode-card active" data-mode="personalized">
+  <div class="mode-header">
+    <h3 class="mode-title">Personalized</h3>
+    <div class="mode-icon personalized-icon">
+      <svg class="icon" viewBox="0 0 24 24">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+        <circle cx="9" cy="7" r="4"></circle>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+      </svg>
+    </div>
+  </div>
+  <p class="mode-description">
+    Responses that match your exact texting style and personality.
+  </p>
+</div>
+
+<div class="mode-card" data-mode="charming">
+  <div class="mode-header">
+    <h3 class="mode-title">Charming</h3>
+    <div class="mode-icon charming-icon">
+      <svg class="icon" viewBox="0 0 24 24">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+      </svg>
+    </div>
+  </div>
+  <p class="mode-description">
+    Warm, engaging responses with a friendly and approachable tone.
+  </p>
+</div>
+
+<div class="mode-card" data-mode="neutral">
+  <div class="mode-header">
+    <h3 class="mode-title">Neutral</h3>
+    <div class="mode-icon neutral-icon">
+      <svg class="icon" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="8" y1="12" x2="16" y2="12"></line>
+      </svg>
+    </div>
+  </div>
+  <p class="mode-description">
+    Clear, straightforward responses without added flair or personality.
+  </p>
+</div>
+
+<div class="mode-card" data-mode="witty">
+  <div class="mode-header">
+    <h3 class="mode-title">Witty</h3>
+    <div class="mode-icon witty-icon">
+      <svg class="icon" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+        <line x1="9" y1="9" x2="9.01" y2="9"></line>
+        <line x1="15" y1="9" x2="15.01" y2="9"></line>
+      </svg>
+    </div>
+  </div>
+  <p class="mode-description">
+    Clever, humorous responses with a touch of playful personality.
+  </p>
+</div>
+</div>
+
+<div class="suggestion-buttons">
+<button class="suggestion-button" id="suggestion-email">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+    <polyline points="22,6 12,13 2,6"></polyline>
+  </svg>
+  How would I respond to this email?
+</button>
+<button class="suggestion-button" id="suggestion-dinner">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+    <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+    <line x1="6" y1="1" x2="6" y2="4"></line>
+    <line x1="10" y1="1" x2="10" y2="4"></line>
+    <line x1="14" y1="1" x2="14" y2="4"></line>
+  </svg>
+  Write a message about dinner plans
+</button>
+<button class="suggestion-button" id="suggestion-professional">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+  </svg>
+  Draft a professional message for me
+</button>
+</div>
+
+<div class="chat-controls">
+<div class="query-input">
+  <textarea class="message-input" id="message-input" placeholder="Type a message to get a response..."></textarea>
+  <button class="send-button btn btn-primary" id="send-button">
+    <span>Send</span>
+  </button>
+</div>
+<button id="clear-chat" class="btn">Clear Chat</button>
+</div>
+
+<div id="conversation-history"></div>
+</div>
+</section>
+</div>
+</main>
+
+<footer>
+<div id="version-display"></div>
+<div class="privacy-notice">
+Your messages are processed locally and never shared with third parties. We respect your privacy.
+</div>
+<div class="creator">Site created by Patrick Hall.</div>
+</footer>
+
+<div id="toast-container"></div>
+
+<!-- Help Modal -->
+<div id="help-modal">
+<div class="modal-content">
+<h2>Welcome to Personalized Convo Bot!</h2>
+<ul>
+<li>• Upload your message file using the Analysis section.</li>
+<li>• Your conversation history appears in the chat area.</li>
+<li>• Type your message and hit Send to get a response that matches your style.</li>
+<li>• Adjust response length and creativity in Settings.</li>
+<li>• Use the Clear Chat button to reset your conversation.</li>
+</ul>
+<button class="close-btn" id="close-help">Close</button>
+</div>
+</div>
+
+<!-- Inline JavaScript as a module -->
+<script type="module">
+const API_KEY = "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";
+const VERSION = "1.0.12";
+
+// Function to show toast notifications
+function showToast(message, type = "info") {
+  const toastContainer = document.getElementById("toast-container");
+  if (!toastContainer) {
+    console.error("Toast container not found");
+    alert(message);
+    return;
+  }
+  
+  const toast = document.createElement("div");
+  toast.className = "toast " + type;
+  toast.textContent = message;
+  toastContainer.appendChild(toast);
+  
+  // Force a reflow to ensure the transition works properly
+  void toast.offsetWidth;
+  
+  // Trigger animation
+  requestAnimationFrame(() => {
+    toast.classList.add("show");
+  });
+  
+  // Auto-dismiss after 3 seconds
+  setTimeout(() => {
+    toast.classList.remove("show");
+    toast.addEventListener("transitionend", () => {
+      if (toastContainer.contains(toast)) {
+        toastContainer.removeChild(toast);
+      }
+    }, { once: true });
+  }, 3000);
+}
+
+// Make showToast globally accessible
+window.showToast = showToast;
+
+document.addEventListener("DOMContentLoaded", function () {
+const header = document.getElementById("site-header");
+const dropZone = document.getElementById("drop-zone");
+const fileInput = document.getElementById("file-input");
+const fileInfoContainer = document.getElementById("file-info-container");
+const fileName = document.getElementById("file-name");
+const removeFile = document.getElementById("remove-file");
+const analyzeButton = document.getElementById("analyze-button");
+const sampleAnalysisButton = document.getElementById("sample-analysis-button");
+const results = document.getElementById("results");
+const themeToggle = document.getElementById("theme-toggle");
+const helpToggle = document.getElementById("help-toggle");
+const helpModal = document.getElementById("help-modal");
+const closeHelp = document.getElementById("close-help");
+const uploadButton = document.getElementById("upload-button");
+const conversationHistoryDiv = document.getElementById("conversation-history");
+const versionDisplay = document.getElementById("version-display");
+const modeCards = document.querySelectorAll(".mode-card");
+const messageInput = document.getElementById("message-input");
+const sendButton = document.getElementById("send-button");
+const settingsPanel = document.getElementById("settings-panel");
+const toggleSettings = document.getElementById("toggle-settings");
+const clearChatButton = document.getElementById("clear-chat");
+const resultCards = document.querySelectorAll(".result-card");
+
+const suggestionEmail = document.getElementById("suggestion-email");
+const suggestionDinner = document.getElementById("suggestion-dinner");
+const suggestionProfessional = document.getElementById("suggestion-professional");
+
+const lengthSlider = document.getElementById("length-slider");
+const lengthValue = document.getElementById("length-value");
+const creativitySlider = document.getElementById("creativity-slider");
+const creativityValue = document.getElementById("creativity-value");
+const tokenLimitSlider = document.getElementById("token-limit-slider");
+const tokenLimitValue = document.getElementById("token-limit-value");
+
+let conversationHistory = [];
+
+// Debug element references
+console.log("Element references loaded:", {
+  messagingElements: {
+    messageInput: messageInput ? true : false,
+    sendButton: sendButton ? true : false,
+    conversationHistoryDiv: conversationHistoryDiv ? true : false,
+    suggestionEmail: suggestionEmail ? true : false,
+    suggestionDinner: suggestionDinner ? true : false,
+    suggestionProfessional: suggestionProfessional ? true : false,
+    clearChatButton: clearChatButton ? true : false
+  }
+});
+
+// Version information
+const versionInfo = "v1.0.2";
+if (versionDisplay) {
+  versionDisplay.textContent = versionInfo;
+} else {
+  console.warn("Version display element not found");
+}
+
+// Track the currently selected response mode
+let currentMode = "personalized"; // Default mode
+
+// Set up mode card selection
+modeCards.forEach(card => {
+  card.addEventListener("click", function() {
+    // Remove active class from all cards
+    modeCards.forEach(c => c.classList.remove("active"));
+    
+    // Add active class to the clicked card
+    card.classList.add("active");
+    
+    // Update the current mode
+    currentMode = card.getAttribute("data-mode");
+    console.log("Response mode changed to:", currentMode);
+    
+    // Show feedback to the user
+    window.showToast(`Response mode set to: ${currentMode}`, "info");
+  });
+});
+
+// Set up sliders
+// Response length labels
+const lengthLabels = ["Very Short", "Short", "Medium", "Long", "Very Long"];
+if (lengthSlider && lengthValue) {
+  lengthSlider.addEventListener("input", function() {
+    const value = parseInt(lengthSlider.value);
+    lengthValue.textContent = lengthLabels[value - 1];
+  });
+} else {
+  console.warn("Length slider elements not found");
+}
+
+// Creativity level labels
+const creativityLabels = ["Conservative", "Mild", "Balanced", "Creative", "Experimental"];
+if (creativitySlider && creativityValue) {
+  creativitySlider.addEventListener("input", function() {
+    const value = parseInt(creativitySlider.value);
+    creativityValue.textContent = creativityLabels[value - 1];
+  });
+} else {
+  console.warn("Creativity slider elements not found");
+}
+
+// Token limit handling
+if (tokenLimitSlider && tokenLimitValue) {
+  tokenLimitSlider.addEventListener("input", function() {
+    tokenLimitValue.textContent = tokenLimitSlider.value;
+  });
+} else {
+  console.warn("Token limit slider elements not found");
+}
+
+// Enhanced result cards interactivity
+resultCards.forEach(card => {
+// Initialize particles in each card
+const particlesContainer = card.querySelector('.card-particles-container');
+if (particlesContainer) {
+for (let i = 0; i < 10; i++) {
+const particle = document.createElement('div');
+particle.className = 'card-particle';
+particle.style.width = Math.random() * 4 + 'px';
+particle.style.height = particle.style.width;
+particle.style.left = Math.random() * 100 + '%';
+particle.style.top = Math.random() * 100 + '%';
+particle.style.animationDelay = Math.random() * 3 + 's';
+particlesContainer.appendChild(particle);
+}
+}
+
+// Add interactive 3D effect
+card.addEventListener('mousemove', function(e) {
+const rect = card.getBoundingClientRect();
+const x = e.clientX - rect.left;
+const y = e.clientY - rect.top;
+
+// Calculate rotation values based on mouse position
+const centerX = rect.width / 2;
+const centerY = rect.height / 2;
+const rotateY = (x - centerX) / 20;
+const rotateX = (centerY - y) / 20;
+
+// Set CSS variables for gradient positions
+card.style.setProperty('--x', (x / rect.width) * 100 + '%');
+card.style.setProperty('--y', (y / rect.height) * 100 + '%');
+
+// Apply 3D transformation
+card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(10px)`;
+
+// Show particles
+const particles = card.querySelectorAll('.card-particle');
+particles.forEach(p => {
+p.style.opacity = '1';
+});
+});
+
+// Reset card on mouseout
+card.addEventListener('mouseleave', function() {
+card.style.transform = 'rotateX(0) rotateY(0) translateZ(0)';
+
+// Hide particles gradually
+const particles = card.querySelectorAll('.card-particle');
+particles.forEach(p => {
+p.style.opacity = '0';
+});
+});
+});
+
+// Function to show toast notifications
+function showToast(message, type = "info") {
+  const toastContainer = document.getElementById("toast-container");
+  const toast = document.createElement("div");
+  toast.className = "toast " + type;
+  toast.textContent = message;
+  toastContainer.appendChild(toast);
+  
+  // Trigger animation
+  setTimeout(() => {
+    toast.classList.add("show");
+  }, 10);
+  
+  // Auto-dismiss after 3 seconds
+  setTimeout(() => {
+    toast.classList.remove("show");
+    setTimeout(() => {
+      toastContainer.removeChild(toast);
+    }, 300);
+  }, 3000);
+}
+
+// Message parsing and analysis functions
+function handleFileUpload(file) {
+  // Validate file before processing
+  if (!file) {
+    window.showToast("No file selected", "error");
+    return;
+  }
+  
+  // Check file type with a more efficient approach
+  const validTypes = ['text/plain', 'application/json', 'application/pdf', 'text/csv'];
+  const validExtensions = ['.txt', '.json', '.pdf', '.csv'];
+  
+  const fileExt = '.' + file.name.split('.').pop().toLowerCase();
+  const isValidType = validTypes.includes(file.type) || validExtensions.some(ext => fileExt === ext);
+  
+  if (!isValidType) {
+    window.showToast("Please upload a text file, PDF, or JSON file", "error");
+    return;
+  }
+  
+  // Check file size (limit to 10MB)
+  if (file.size > 10 * 1024 * 1024) {
+    window.showToast("File size exceeds 10MB limit", "error");
+    return;
+  }
+  
+  // Update UI first for better user experience
+  fileName.textContent = file.name;
+  fileInfoContainer.style.display = "flex";
+  window.showToast("Processing your message data...", "info");
+  
+  // Read the file contents based on type
+  const reader = new FileReader();
+  
+  reader.onload = function(e) {
+    try {
+      parseMessageContent(file.type, e.target.result, file.name);
+    } catch (error) {
+      console.error("Error processing file:", error);
+      window.showToast("Error reading file: " + error.message, "error");
+    }
+  };
+  
+  reader.onerror = function() {
+    window.showToast("Error reading file", "error");
+  };
+  
+  // Use the appropriate read method based on file type
+  if (file.type === 'application/pdf') {
+    reader.readAsArrayBuffer(file);
+  } else {
+    reader.readAsText(file);
+  }
+}
+
+function parseMessageContent(fileType, content, fileName) {
+  // Remove redundant showToast check - it's already globally accessible
+  
+  let messages = [];
+  let userIdentifier = null;
+  
+  try {
+    // Determine which parser to use based on file type and content patterns
+    if (fileType === 'application/pdf') {
+      // For PDFs, we'll need to extract text first
+      extractTextFromPDF(content)
+        .then(text => {
+          const result = detectFormatAndParse(text);
+          if (result.messages.length > 0) {
+            // Process is handled inside detectFormatAndParse now
+            console.log(`Processed ${result.messages.length} messages`);
+          } else {
+            // Add a toast message if no messages were found
+            window.showToast("No messages were found in the PDF. Make sure the file contains conversation data.", "warning");
+          }
+        })
+        .catch(error => {
+          console.error("PDF processing error:", error);
+          window.showToast("Error processing PDF: " + error.message, "error");
+        });
+    } else {
+      // For text files, proceed directly to format detection
+      const result = detectFormatAndParse(content);
+      if (result.messages.length > 0) {
+        // Process is handled inside detectFormatAndParse now
+        console.log(`Processed ${result.messages.length} messages`);
+      } else {
+        // Add a toast message if no messages were found
+        window.showToast("No messages were found in the file. Make sure the file contains conversation data.", "warning");
+      }
+    }
+  } catch (error) {
+    console.error("Message parsing error:", error);
+    window.showToast("Error parsing messages: " + error.message, "error");
+  }
+}
+
+// Add event listeners for file upload functionality
+dropZone.addEventListener("click", function() {
+  fileInput.click();
+});
+
+dropZone.addEventListener("dragover", function(e) {
+  e.preventDefault();
+  dropZone.classList.add("active");
+});
+
+dropZone.addEventListener("dragleave", function() {
+  dropZone.classList.remove("active");
+});
+
+dropZone.addEventListener("drop", function(e) {
+  e.preventDefault();
+  dropZone.classList.remove("active");
+  
+  if (e.dataTransfer.files.length) {
+    const file = e.dataTransfer.files[0];
+    handleFileUpload(file);
+  }
+});
+
+fileInput.addEventListener("change", function() {
+  if (fileInput.files.length) {
+    const file = fileInput.files[0];
+    handleFileUpload(file);
+  }
+});
+
+uploadButton.addEventListener("click", function() {
+  fileInput.click();
+});
+
+sampleAnalysisButton.addEventListener("click", function() {
+  // Load sample data for analysis
+  console.log("Sample analysis button clicked, fetching sample data...");
+  
+  // Show loading toast
+  window.showToast("Loading sample data...", "info");
+  
+  fetch('sample-data.json')
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      console.log("Sample data fetched successfully");
+      return response.json();
+    })
+    .then(data => {
+      console.log("Sample data parsed:", data);
+      // Process the sample data
+      processMessages(data.messages, data.sender);
+      window.showToast("Sample data loaded successfully", "success");
+    })
+    .catch(error => {
+      console.error("Error loading sample data:", error);
+      window.showToast("Error loading sample data: " + error.message, "error");
+    });
+});
+
+// Close the DOMContentLoaded event listener
+});
+
+// Add event listeners for Help button functionality
+helpToggle.addEventListener("click", function() {
+  helpModal.classList.add("active");
+});
+
+closeHelp.addEventListener("click", function() {
+  helpModal.classList.remove("active");
+});
+
+// Close help modal when clicking outside of it
+document.addEventListener("click", function(event) {
+  if (event.target === helpModal) {
+    helpModal.classList.remove("active");
+  }
+});
+
+// Function to reset the UI
+function resetUI() {
+  // Hide results section
+  results.classList.remove('active');
+  
+  // Clear and hide conversation history
+  if (conversationHistoryDiv) {
+    conversationHistoryDiv.innerHTML = '';
+    conversationHistoryDiv.classList.remove('active');
+  }
+}
+
+// Add event listener for clear chat button
+clearChatButton.addEventListener("click", function() {
+  resetUI();
+  window.showToast("Chat cleared", "info");
+});
+
+// NOTE: The old detectFormatAndParse function was removed from here.
+
+// Process messages and update UI
+function processMessages(messages, sender) {
+  if (!messages || messages.length === 0) {
+    window.showToast("No messages found to process", "warning");
+    return;
+  }
+  
+  if (!sender) {
+    window.showToast("No valid message sender detected", "warning");
+    return;
+  }
+  
+  // Safely get the conversation history div
+  const conversationHistoryDiv = document.getElementById("conversation-history");
+  if (!conversationHistoryDiv) {
+    window.showToast("Conversation history element not found", "error");
+    return;
+  }
+  
+  // Clear previous results
+  conversationHistoryDiv.innerHTML = '';
+  
+  // Display the messages
+  messages.forEach(msg => {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = msg.sender === sender ? 'message sent' : 'message received';
+    
+    const contentP = document.createElement('p');
+    contentP.textContent = msg.content;
+    
+    const timeSpan = document.createElement('span');
+    timeSpan.className = 'message-time';
+    timeSpan.textContent = msg.timestamp || 'Unknown time';
+    
+    messageDiv.appendChild(contentP);
+    messageDiv.appendChild(timeSpan);
+    conversationHistoryDiv.appendChild(messageDiv);
+  });
+  
+  // Show the conversation history
+  conversationHistoryDiv.classList.add('active');
+  
+  // Show the results section
+  results.classList.add('active');
+  
+  // Scroll to the results section
+  results.scrollIntoView({ behavior: 'smooth' });
+  
+  // Scroll conversation to the bottom
+  conversationHistoryDiv.scrollTop = conversationHistoryDiv.scrollHeight;
+}
+
+// Format detection and parsing function
+function detectFormatAndParse(content) {
+  try {
+    // Initialize result object
+    const result = {
+      messages: [],
+      sender: null,
+      format: "unknown"
+    };
+    
+    // Check for Facebook Messenger format
+    if (content.includes("Participants:") || content.includes("Participants in chat:")) {
+      window.showToast("Detected Facebook Messenger format", "info");
+      const fbResult = extractFacebookMessages(content);
+      result.messages = fbResult.messages;
+      result.sender = fbResult.sender;
+      result.format = "facebook";
+    } 
+    // Check for WhatsApp format
+    else if (content.includes("[") && content.includes("]") && 
+             (content.includes(": ") || content.includes(" - "))) {
+      window.showToast("Detected WhatsApp format", "info");
+      const waResult = extractWhatsAppMessages(content);
+      result.messages = waResult.messages;
+      result.sender = waResult.sender;
+      result.format = "whatsapp";
+    }
+    // Check for iMessage format
+    else if (content.includes("iMessage with") || 
+             (content.match(/\d{1,2}\/\d{1,2}\/\d{2,4}, \d{1,2}:\d{2}(:\d{2})? (AM|PM)/g))) {
+      window.showToast("Detected iMessage format", "info");
+      const imResult = extractiMessageMessages(content);
+      result.messages = imResult.messages;
+      result.sender = imResult.sender;
+      result.format = "imessage";
+    }
+    // Try general text extraction as fallback
+    else {
+      window.showToast("No specific format detected, trying general extraction", "warning");
+      const generalResult = extractGeneralTextAsMessages(content);
+      result.messages = generalResult.messages;
+      result.sender = generalResult.sender;
+      result.format = "general";
+    }
+    
+    // Process the messages if we have them
+    if (result.messages.length > 0 && result.sender) {
+      processMessages(result.messages, result.sender);
+    } else {
+      window.showToast("Could not extract messages from the content", "error");
+    }
+    
+    return result;
+  } catch (error) {
+    console.error("Format detection error:", error);
+    window.showToast("Error detecting message format: " + error.message, "error");
+    return { messages: [], sender: null, format: "error" };
+  }
+}
+
+// Extract messages from Facebook Messenger format
+function extractFacebookMessages(content) {
+  try {
+    const lines = content.split('\n');
+    let participants = [];
+    let messages = [];
+    let currentSender = null;
+    
+    // Extract participants
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].includes("Participants:") || lines[i].includes("Participants in chat:")) {
+        // Extract participants from the next few lines
+        let j = i + 1;
+        while (j < lines.length && j < i + 10 && lines[j].trim() !== "") {
+          participants.push(lines[j].trim());
+          j++;
+        }
+        break;
+      }
+    }
+    
+    // If no participants found, try to extract from the content
+    if (participants.length === 0) {
+      const participantsMatch = content.match(/Participants:(.+?)(?=\n\n)/s);
+      if (participantsMatch) {
+        participants = participantsMatch[1].split(',').map(p => p.trim());
+      }
+    }
+    
+    // Extract messages
+    const messageRegex = /(\w+\s\w+)\s(\d{1,2}\/\d{1,2}\/\d{2,4}),\s(\d{1,2}:\d{2}(?::\d{2})?\s[AP]M)\s-\s(.*)/g;
+    let match;
+    
+    while ((match = messageRegex.exec(content)) !== null) {
+      const sender = match[1].trim();
+      const date = match[2].trim();
+      const time = match[3].trim();
+      const messageContent = match[4].trim();
+      
+      if (!currentSender && participants.includes(sender)) {
+        currentSender = sender;
+      }
+      
+      messages.push({
+        sender: sender,
+        content: messageContent,
+        timestamp: `${date} ${time}`
+      });
+    }
+    
+    // If no messages found with regex, try line by line
+    if (messages.length === 0) {
+      let currentDate = "";
+      
+      for (let i = 0; i < lines.length; i++) {
+        // Check for date lines
+        if (lines[i].match(/\w+, \w+ \d{1,2}, \d{4}/)) {
+          currentDate = lines[i].trim();
+          continue;
+        }
+        
+        // Check for message lines
+        const messageLine = lines[i].match(/^([\w\s]+) (\d{1,2}:\d{2}(?::\d{2})?\s[AP]M)(?:\s+|$)(.*)/);
+        if (messageLine && participants.includes(messageLine[1].trim())) {
+          const sender = messageLine[1].trim();
+          const time = messageLine[2].trim();
+          const messageContent = messageLine[3] ? messageLine[3].trim() : "";
+          
+          if (!currentSender && participants.includes(sender)) {
+            currentSender = sender;
+          }
+          
+          messages.push({
+            sender: sender,
+            content: messageContent,
+            timestamp: currentDate ? `${currentDate} ${time}` : time
+          });
+        }
+      }
+    }
+    
+    return {
+      messages: messages,
+      sender: currentSender || (participants.length > 0 ? participants[0] : null)
+    };
+  } catch (error) {
+    console.error("Facebook extraction error:", error);
+    window.showToast("Error extracting Facebook messages: " + error.message, "error");
+    return { messages: [], sender: null };
+  }
+}
+
+// Extract messages from WhatsApp format
+function extractWhatsAppMessages(content) {
+  try {
+    const lines = content.split('\n');
+    let messages = [];
+    let senders = new Map();
+    
+    // Regular expression for WhatsApp messages
+    // Format: [MM/DD/YY, HH:MM:SS AM/PM] Sender: Message
+    const messageRegex = /\[(\d{1,2}\/\d{1,2}\/\d{2,4},\s\d{1,2}:\d{2}(?::\d{2})?\s[AP]M)\]\s([^:]+):\s(.*)/;
+    
+    for (let i = 0; i < lines.length; i++) {
+      const match = lines[i].match(messageRegex);
+      if (match) {
+        const timestamp = match[1].trim();
+        const sender = match[2].trim();
+        let content = match[3].trim();
+        
+        // Check for multi-line messages
+        let j = i + 1;
+        while (j < lines.length && !lines[j].match(messageRegex) && lines[j].trim() !== "") {
+          content += "\n" + lines[j].trim();
+          j++;
+        }
+        
+        messages.push({
+          sender: sender,
+          content: content,
+          timestamp: timestamp
+        });
+        
+        // Count message frequency for each sender
+        senders.set(sender, (senders.get(sender) || 0) + 1);
+        
+        // Skip processed lines for multi-line messages
+        if (j > i + 1) {
+          i = j - 1;
+        }
+      }
+    }
+    
+    // Determine the most likely sender (the one with the most messages)
+    let mainSender = null;
+    let maxCount = 0;
+    
+    for (const [sender, count] of senders.entries()) {
+      if (count > maxCount) {
+        maxCount = count;
+        mainSender = sender;
+      }
+    }
+    
+    return {
+      messages: messages,
+      sender: mainSender
+    };
+  } catch (error) {
+    console.error("WhatsApp extraction error:", error);
+    window.showToast("Error extracting WhatsApp messages: " + error.message, "error");
+    return { messages: [], sender: null };
+  }
+}
+
+// Extract messages from iMessage format
+function extractiMessageMessages(content) {
+  try {
+    const lines = content.split('\n');
+    let messages = [];
+    let senders = new Map();
+    let mainSender = null;
+    
+    // Try to extract the conversation participants
+    const conversationMatch = content.match(/iMessage with ([^(]+)/);
+    if (conversationMatch) {
+      mainSender = conversationMatch[1].trim();
+    }
+    
+    // Regular expression for iMessage format
+    // Format: MM/DD/YY, HH:MM:SS AM/PM - Sender: Message
+    const messageRegex = /(\d{1,2}\/\d{1,2}\/\d{2,4}),\s(\d{1,2}:\d{2}(?::\d{2})?\s[AP]M)\s-\s([^:]+):\s(.*)/;
+    
+    for (let i = 0; i < lines.length; i++) {
+      const match = lines[i].match(messageRegex);
+      if (match) {
+        const date = match[1].trim();
+        const time = match[2].trim();
+        const sender = match[3].trim();
+        let content = match[4].trim();
+        
+        // Check for multi-line messages
+        let j = i + 1;
+        while (j < lines.length && !lines[j].match(messageRegex) && lines[j].trim() !== "") {
+          content += "\n" + lines[j].trim();
+          j++;
+        }
+        
+        messages.push({
+          sender: sender,
+          content: content,
+          timestamp: `${date} ${time}`
+        });
+        
+        // Count message frequency for each sender
+        senders.set(sender, (senders.get(sender) || 0) + 1);
+        
+        // Skip processed lines for multi-line messages
+        if (j > i + 1) {
+          i = j - 1;
+        }
+      }
+    }
+    
+    // If we couldn't determine the main sender from the header,
+    // use the one with the most messages
+    if (!mainSender) {
+      let maxCount = 0;
+      
+      for (const [sender, count] of senders.entries()) {
+        if (count > maxCount) {
+          maxCount = count;
+          mainSender = sender;
+        }
+      }
+    }
+    
+    return {
+      messages: messages,
+      sender: mainSender
+    };
+  } catch (error) {
+    console.error("iMessage extraction error:", error);
+    window.showToast("Error extracting iMessage messages: " + error.message, "error");
+    return { messages: [], sender: null };
+  }
+}
+
+// Extract messages from general text format
+function extractGeneralTextAsMessages(content) {
+  try {
+    const lines = content.split('\n').filter(line => line.trim() !== "");
+    let messages = [];
+    let possibleSenders = new Map();
+    
+    // Try to identify potential message patterns
+    const colonPattern = /^([^:]+):\s*(.*)/;
+    const dashPattern = /^([^-]+)\s*-\s*(.*)/;
+    const bracketPattern = /^\[([^\]]+)\]\s*(.*)/;
+    const quotedPattern = /^"([^"]+)":\s*(.*)/;
+    
+    for (let i = 0; i < lines.length; i++) {
+      let match = null;
+      let sender = null;
+      let messageContent = null;
+      
+      // Try different patterns
+      if (match = lines[i].match(colonPattern)) {
+        sender = match[1].trim();
+        messageContent = match[2].trim();
+      } else if (match = lines[i].match(dashPattern)) {
+        sender = match[1].trim();
+        messageContent = match[2].trim();
+      } else if (match = lines[i].match(bracketPattern)) {
+        sender = match[1].trim();
+        messageContent = match[2].trim();
+      } else if (match = lines[i].match(quotedPattern)) {
+        sender = match[1].trim();
+        messageContent = match[2].trim();
+      }
+      
+      if (sender && messageContent) {
+        // Count occurrences of each sender
+        possibleSenders.set(sender, (possibleSenders.get(sender) || 0) + 1);
+        
+        messages.push({
+          sender: sender,
+          content: messageContent,
+          timestamp: new Date().toLocaleString() // Use current time as fallback
+        });
+      } else if (messages.length > 0) {
+        // If no pattern match but we have previous messages,
+        // consider this a continuation of the last message
+        messages[messages.length - 1].content += "\n" + lines[i].trim();
+      }
+    }
+    
+    // Determine the most likely sender
+    let mainSender = null;
+    let maxCount = 0;
+    
+    for (const [sender, count] of possibleSenders.entries()) {
+      if (count > maxCount) {
+        maxCount = count;
+        mainSender = sender;
+      }
+    }
+    
+    // If we couldn't identify a clear pattern, try to create messages from paragraphs
+    if (messages.length === 0) {
+      window.showToast("No clear message format detected, trying paragraph-based extraction", "warning");
+      
+      // Split by double newlines to get paragraphs
+      const paragraphs = content.split(/\n\s*\n/).filter(p => p.trim() !== "");
+      
+      for (let i = 0; i < paragraphs.length; i++) {
+        messages.push({
+          sender: i % 2 === 0 ? "Person A" : "Person B", // Alternate senders
+          content: paragraphs[i].trim(),
+          timestamp: new Date().toLocaleString() // Use current time as fallback
+        });
+      }
+      
+      mainSender = "Person A"; // Default sender
+    }
+    
+    return {
+      messages: messages,
+      sender: mainSender
+    };
+  } catch (error) {
+    console.error("General text extraction error:", error);
+    window.showToast("Error extracting messages from text: " + error.message, "error");
+    return { messages: [], sender: null };
+  }
+}
+
+// Function to extract text from PDF files
+async function extractTextFromPDF(arrayBuffer) {
+  try {
+    // Check if PDF.js is loaded
+    if (typeof pdfjsLib === 'undefined') {
+      window.showToast("PDF.js library is not loaded. Please refresh the page and try again.", "error");
+      throw new Error("PDF.js library is not loaded");
+    }
+    
+    // Load the PDF document
+    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+    const pdf = await loadingTask.promise;
+    
+    if (!pdf) {
+      throw new Error("Failed to load PDF document");
+    }
+    
+    let fullText = "";
+    
+    // Get total number of pages
+    const numPages = pdf.numPages;
+    window.showToast(`PDF loaded successfully. Extracting text from ${numPages} pages...`, "info");
+    
+    // Extract text from each page
+    for (let i = 1; i <= numPages; i++) {
+      const page = await pdf.getPage(i);
+      const textContent = await page.getTextContent();
+      
+      // Join the text items into a string
+      const pageText = textContent.items.map(item => item.str).join(' ');
+      fullText += pageText + "\n\n";
+    }
+    
+    return fullText;
+  } catch (error) {
+    console.error("PDF extraction error:", error);
+    window.showToast("Error extracting text from PDF: " + error.message, "error");
+    throw error;
+  }
+}
+
+// Function to handle suggestion button clicks
+function handleSuggestion(suggestionText) {
+  console.log("Handling suggestion:", suggestionText);
+  
+  // Set the suggested text in the message input
+  if (messageInput) {
+    messageInput.value = suggestionText;
+    messageInput.focus();
+    
+    // If we want to automatically send the suggestion
+    // simulateSendMessage();
+  } else {
+    console.error("Message input element not found");
+    window.showToast("Could not set suggestion text. Please try again.", "error");
+  }
+}
+
+// Function to send a message
+function sendMessage() {
+  if (!messageInput) {
+    console.error("Message input element not found");
+    window.showToast("Message input not found", "error");
+    return;
+  }
+  
+  const message = messageInput.value.trim();
+  if (!message) {
+    window.showToast("Please enter a message", "warning");
+    return;
+  }
+  
+  // Get current settings
+  const responseMode = currentMode || "personalized";
+  let responseLength = "medium";
+  let creativityLevel = "balanced";
+  let tokenLimit = 300;
+  
+  try {
+    // Get slider values if available
+    if (lengthSlider) {
+      const lengthIndex = parseInt(lengthSlider.value) - 1;
+      responseLength = lengthLabels[lengthIndex].toLowerCase();
+    }
+    
+    if (creativitySlider) {
+      const creativityIndex = parseInt(creativitySlider.value) - 1;
+      creativityLevel = creativityLabels[creativityIndex].toLowerCase();
+    }
+    
+    if (tokenLimitSlider) {
+      tokenLimit = parseInt(tokenLimitSlider.value);
+    }
+  } catch (error) {
+    console.error("Error getting response settings:", error);
+  }
+  
+  console.log("Sending message with settings:", {
+    message,
+    responseMode,
+    responseLength,
+    creativityLevel,
+    tokenLimit
+  });
+  
+  // Clear the input
+  messageInput.value = "";
+  
+  // Get the conversation history element
+  const conversationHistoryDiv = document.getElementById("conversation-history");
+  if (!conversationHistoryDiv) {
+    console.error("Conversation history element not found");
+    window.showToast("Could not display message", "error");
+    return;
+  }
+  
+  // Make sure the conversation history is visible
+  conversationHistoryDiv.classList.add('active');
+  
+  // Add the user message to the conversation
+  const userMessageDiv = document.createElement('div');
+  userMessageDiv.className = 'message sent';
+  
+  const contentP = document.createElement('p');
+  contentP.textContent = message;
+  
+  const timeSpan = document.createElement('span');
+  timeSpan.className = 'message-time';
+  const now = new Date();
+  timeSpan.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  
+  userMessageDiv.appendChild(contentP);
+  userMessageDiv.appendChild(timeSpan);
+  conversationHistoryDiv.appendChild(userMessageDiv);
+  
+  // Scroll conversation to the bottom
+  conversationHistoryDiv.scrollTop = conversationHistoryDiv.scrollHeight;
+  
+  // Show typing indicator
+  const typingIndicator = document.createElement('div');
+  typingIndicator.className = 'message received typing-indicator';
+  typingIndicator.innerHTML = '<span></span><span></span><span></span>';
+  conversationHistoryDiv.appendChild(typingIndicator);
+  
+  // Simulate a response (normally this would be from the API)
+  setTimeout(function() {
+    // Remove typing indicator
+    conversationHistoryDiv.removeChild(typingIndicator);
+    
+    // Generate a different response based on the selected mode
+    let responseText = "";
+    
+    switch(responseMode) {
+      case "personalized":
+        responseText = "I've analyzed your unique communication style and this response matches your typical tone and word choice. This personalized response would normally be generated by the AI based on your message history.";
+        break;
+      case "charming":
+        responseText = "Hey there! 😊 I'd love to help with that! Your idea sounds fantastic and I'm excited to hear more about it. Let me know what you think!";
+        break;
+      case "neutral":
+        responseText = "Acknowledged. Based on your request, here is a straightforward response with the information you need. Please let me know if you require additional details.";
+        break;
+      case "witty":
+        responseText = "Well, that's an interesting question! If I had a dollar for every time someone asked me that, I'd have exactly one dollar. Let me enlighten you with a response that's equal parts helpful and entertaining.";
+        break;
+      default:
+        responseText = "This is a sample response. In a real implementation, this would be generated by the AI based on your message and selected mode.";
+    }
+    
+    // Adjust length based on setting
+    if (responseLength === "very short") {
+      responseText = responseText.split('.')[0] + '.';
+    } else if (responseLength === "short") {
+      responseText = responseText.split('.').slice(0, 2).join('.') + '.';
+    } else if (responseLength === "long") {
+      responseText = responseText + " " + responseText;
+    } else if (responseLength === "very long") {
+      responseText = responseText + " " + responseText + " " + responseText;
+    }
+    
+    // Add the bot's response to the conversation
+    const botMessageDiv = document.createElement('div');
+    botMessageDiv.className = 'message received';
+    
+    const botContentP = document.createElement('p');
+    botContentP.textContent = responseText;
+    
+    const botTimeSpan = document.createElement('span');
+    botTimeSpan.className = 'message-time';
+    const responseTime = new Date();
+    botTimeSpan.textContent = responseTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    botMessageDiv.appendChild(botContentP);
+    botMessageDiv.appendChild(botTimeSpan);
+    conversationHistoryDiv.appendChild(botMessageDiv);
+    
+    // Scroll conversation to the bottom again
+    conversationHistoryDiv.scrollTop = conversationHistoryDiv.scrollHeight;
+  }, 1500); // Longer delay for typing effect
+}
+
+// Add event listeners for suggestion buttons
+suggestionEmail.addEventListener("click", function() {
+  handleSuggestion("How would I respond to an email from my boss asking for a project update?");
+});
+
+suggestionDinner.addEventListener("click", function() {
+  handleSuggestion("Write a message to plan dinner with friends this weekend.");
+});
+
+suggestionProfessional.addEventListener("click", function() {
+  handleSuggestion("Draft a professional introduction email for a job application.");
+});
+
+// Add event listener for send button
+sendButton.addEventListener("click", sendMessage);
+
+// Add event listener for pressing Enter in the message input
+messageInput.addEventListener("keypress", function(event) {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault(); // Prevent default to avoid newline
+    sendMessage();
+  }
+});
+
+// Add event listener for settings toggle
+toggleSettings.addEventListener("click", function() {
+  if (settingsPanel) {
+    settingsPanel.classList.toggle("active");
+    const isActive = settingsPanel.classList.contains("active");
+    toggleSettings.textContent = isActive ? "Hide Settings" : "Settings";
+  }
+});
+
+// NOTE: The old detectFormatAndParse function was removed from here.
+
+// Process messages and update UI
+function processMessages(messages, sender) {
+  if (!messages || messages.length === 0) {
+    window.showToast("No messages found to process", "warning");
+    return;
+  }
+  
+  if (!sender) {
+    window.showToast("No valid message sender detected", "warning");
+    return;
+  }
+  
+  // Safely get the conversation history div
+  const conversationHistoryDiv = document.getElementById("conversation-history");
+  if (!conversationHistoryDiv) {
+    window.showToast("Conversation history element not found", "error");
+    return;
+  }
+  
+  // Clear previous results
+  conversationHistoryDiv.innerHTML = '';
+  
+  // Display the messages
+  messages.forEach(msg => {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = msg.sender === sender ? 'message sent' : 'message received';
+    
+    const contentP = document.createElement('p');
+    contentP.textContent = msg.content;
+    
+    const timeSpan = document.createElement('span');
+    timeSpan.className = 'message-time';
+    timeSpan.textContent = msg.timestamp || 'Unknown time';
+    
+    messageDiv.appendChild(contentP);
+    messageDiv.appendChild(timeSpan);
+    conversationHistoryDiv.appendChild(messageDiv);
+  });
+  
+  // Show the conversation history
+  conversationHistoryDiv.classList.add('active');
+  
+  // Show the results section
+  results.classList.add('active');
+  
+  // Scroll to the results section
+  results.scrollIntoView({ behavior: 'smooth' });
+  
+  // Scroll conversation to the bottom
+  conversationHistoryDiv.scrollTop = conversationHistoryDiv.scrollHeight;
+}
+</script>
+</body>
+</html>
